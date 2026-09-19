@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FiveM Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="hidden">
+    <div class="panel">
+      <header>
+        <div>
+          <h1>Admin Panel</h1>
+          <span id="status">Ready</span>
+        </div>
+        <button id="close" class="icon">×</button>
+      </header>
+
+      <nav>
+        <button class="tab active" data-tab="players">Players</button>
+        <button class="tab" data-tab="reports">Reports <b id="reportCount">0</b></button>
+        <button class="tab" data-tab="reportForm">Submit Report</button>
+      </nav>
+
+      <main>
+        <section id="players" class="tabpage active">
+          <div class="toolbar">
+            <input id="playerSearch" placeholder="Search players...">
+            <button id="refresh">Refresh</button>
+          </div>
+          <div id="playersList" class="list"></div>
+        </section>
+
+        <section id="reports" class="tabpage">
+          <div id="reportsList" class="list"></div>
+        </section>
+
+        <section id="reportForm" class="tabpage">
+          <div class="card">
+            <h2>Submit Player Report</h2>
+            <label>Player ID (optional)</label>
+            <input id="reportTarget" type="number" min="1" placeholder="Server ID">
+            <label>Reason / details</label>
+            <textarea id="reportMessage" maxlength="500" placeholder="Describe what happened..."></textarea>
+            <button id="submitReport" class="primary">Submit Report</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

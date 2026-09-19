@@ -1,0 +1,55 @@
+# FiveM Admin Menu
+
+A standalone FiveM resource providing:
+
+- Admin-only NUI menu
+- Player list and search
+- Ban with persistent identifier-based bans
+- Spectate
+- Freeze / unfreeze
+- Set player on fire
+- Kill
+- View and close player reports
+- Player report submission through the NUI or `/report [player id] [message]`
+- ACE-based server-side authorization
+
+## Install
+
+1. Put the `fivem_admin_menu` folder in your server's resources directory.
+2. Add this to `server.cfg`:
+
+```cfg
+ensure fivem_admin_menu
+add_ace group.admin fivem.admin allow
+```
+
+Add your staff identifiers to the admin group using your server's normal ACE setup, for example:
+
+```cfg
+add_principal identifier.license:YOUR_LICENSE_HERE group.admin
+```
+
+3. Restart the resource/server.
+4. Press F10 or type `/admin`.
+
+## Security notes
+
+All privileged actions are validated server-side using ACE permission. Do not rely on NUI visibility for authorization.
+
+Bans are saved in `bans.json` and match any stored player identifier. Back up this file if you want to preserve bans during resource migrations.
+
+Reports are currently stored in server memory and are cleared when the resource/server restarts. For production use, replace the report table with a database such as oxmysql.
+
+## Production hardening
+
+Recommended additions before public deployment:
+
+- oxmysql persistence for reports/bans
+- Discord/webhook audit logging
+- Staff action logging
+- Ban expiration/unban support
+- Per-action permissions (e.g. `fivem.admin.ban`, `fivem.admin.kill`)
+- Rate limiting for reports
+- Server-side reason length/character validation
+- Staff-only report visibility and pagination
+- Better spectate camera/vehicle handling
