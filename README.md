@@ -15,6 +15,7 @@ A standalone FiveM resource providing:
 - Spawn 4 hostile wild dogs around a selected player
 - Spawn vehicles by GTA/FiveM model name from the admin menu
 - View and close player reports
+- Reply to player reports from the admin menu with an in-game notification to the reporter
 - Player report submission through the NUI or `/report [player id] [message]`
 - ACE-based server-side authorization
 

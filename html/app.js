@@ -59,6 +59,15 @@ function renderReports() {
       <div class="sub">From ${escapeHtml(r.reporter)} (${r.reporterId}) · Target: ${escapeHtml(r.targetName)}${r.target ? ` (${r.target})` : ''}</div>
       <div class="sub">${escapeHtml(r.created)}</div>
       <div class="report-msg">${escapeHtml(r.message)}</div>
+      ${(r.replies || []).length ? `
+        <div class="reply-history">
+          ${(r.replies || []).map(x => `
+            <div class="admin-reply">
+              <strong>${escapeHtml(x.admin)}:</strong> ${escapeHtml(x.message)}
+              <div class="sub">${escapeHtml(x.created || '')}</div>
+            </div>
+          `).join('')}
+        </div>` : ''}
       ${r.status === 'open' ? `
         <div class="actions">
           ${r.target ? `<button onclick="action('spectate',${r.target})">Spectate</button>
@@ -68,6 +77,7 @@ function renderReports() {
           <button class="warn" onclick="action('dogs',${r.target})">Wild Dogs</button>
           <button class="danger" onclick="action('explodevehicle',${r.target})">Explode Vehicle</button>
           <button class="danger" onclick="action('kill',${r.target})">Kill</button>` : ''}
+          <button class="primary" onclick="replyReport(${r.id})">Reply</button>
           <button onclick="closeReport(${r.id})">Close Report</button>
         </div>` : ''}
     </div>
@@ -93,6 +103,12 @@ function banPlayer(id) {
 
 function closeReport(id) {
   post('closeReport', {id});
+}
+
+function replyReport(id) {
+  const message = prompt('Reply to this report:');
+  if (!message || !message.trim()) return;
+  post('replyReport', {id, message: message.trim()});
 }
 
 function showToast(msg) {
@@ -147,6 +163,8 @@ window.addEventListener('message', e => {
     renderReports();
     showToast(`New report #${m.report.id}`);
   } else if (m.action === 'toast') {
+    showToast(m.message);
+  } else if (m.action === 'reportReplyNotification') {
     showToast(m.message);
   } else if (m.action === 'spectating') {
     document.getElementById('status').textContent = `Spectating player ${m.target} — press ESC to stop`;

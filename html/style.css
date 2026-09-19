@@ -114,3 +114,18 @@ label { display: block; color: #9da8b6; margin: 15px 0 7px; font-size: 13px; }
   display: none;
   max-width: 420px;
 }
+
+
+.reply-history {
+  margin: 10px 0;
+  border-left: 3px solid #2c67d8;
+  padding-left: 10px;
+}
+.admin-reply {
+  background: #121821;
+  border: 1px solid #27313d;
+  border-radius: 7px;
+  padding: 9px 11px;
+  margin: 6px 0;
+  color: #dce3ec;
+}

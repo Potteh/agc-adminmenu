@@ -234,6 +234,67 @@ RegisterNetEvent('fadm:submitReport', function(target, message)
     end
 end)
 
+
+RegisterNetEvent('fadm:replyReport', function(reportId, message)
+    local src = source
+    if not isAdmin(src) then return end
+
+    reportId = tonumber(reportId)
+    message = tostring(message or ''):gsub('^%s+', ''):gsub('%s+$', '')
+
+    if not reportId or #message < 1 then
+        notify(src, 'Enter a reply message.')
+        return
+    end
+
+    if #message > 500 then
+        message = message:sub(1, 500)
+    end
+
+    local found = nil
+    for _, report in ipairs(reports) do
+        if report.id == reportId then
+            found = report
+            break
+        end
+    end
+
+    if not found then
+        notify(src, 'Report not found.')
+        return
+    end
+
+    found.replies = found.replies or {}
+    found.replies[#found.replies + 1] = {
+        admin = GetPlayerName(src) or 'Admin',
+        message = message,
+        created = os.date('%Y-%m-%d %H:%M:%S')
+    }
+
+    local reporterId = tonumber(found.reporterId)
+    if reporterId and GetPlayerName(reporterId) then
+        TriggerClientEvent('fadm:reportReply', reporterId, {
+            reportId = found.id,
+            admin = GetPlayerName(src) or 'Admin',
+            message = message
+        })
+        notify(src, ('Reply sent to %s for report #%d.'):format(GetPlayerName(reporterId), found.id))
+    else
+        notify(src, ('Reply saved, but the reporter for report #%d is offline.'):format(found.id))
+    end
+
+    -- Refresh all online admins so the reply appears immediately.
+    for _, id in ipairs(GetPlayers()) do
+        local admin = tonumber(id)
+        if isAdmin(admin) then
+            TriggerClientEvent('fadm:updateData', admin, {
+                players = playerList(),
+                reports = reports
+            })
+        end
+    end
+end)
+
 RegisterNetEvent('fadm:closeReport', function(reportId)
     local src = source
     if not isAdmin(src) then return end

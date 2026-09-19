@@ -30,6 +30,21 @@ RegisterNetEvent('fadm:notify', function(msg)
     SendNUIMessage({ action = 'toast', message = msg })
 end)
 
+RegisterNetEvent('fadm:reportReply', function(data)
+    local msg = ('Admin reply to report #%s: %s'):format(data.reportId or '?', data.message or '')
+    SendNUIMessage({
+        action = 'reportReplyNotification',
+        message = msg,
+        reportId = data.reportId,
+        admin = data.admin
+    })
+
+    -- Native GTA notification as a fallback if the admin menu is closed.
+    BeginTextCommandThefeedPost('STRING')
+    AddTextComponentSubstringPlayerName(msg)
+    EndTextCommandThefeedPostTicker(false, true)
+end)
+
 RegisterNetEvent('fadm:setFreeze', function(state)
     local ped = PlayerPedId()
     FreezeEntityPosition(ped, state)
@@ -230,6 +245,11 @@ end)
 
 RegisterNUICallback('closeReport', function(data, cb)
     TriggerServerEvent('fadm:closeReport', tonumber(data.id))
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('replyReport', function(data, cb)
+    TriggerServerEvent('fadm:replyReport', tonumber(data.id), data.message)
     cb({ ok = true })
 end)
 
