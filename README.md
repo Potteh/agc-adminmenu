@@ -83,3 +83,7 @@ If your server uses a replacement keys resource instead of `qb-vehiclekeys`, cha
 
 Report replies use an inline FiveM NUI text box instead of JavaScript `prompt()`.
 This keeps reply entry inside the admin menu and avoids opening an external JavaScript/browser dialog.
+
+
+## v8 fix
+Fixed the report Reply button by correctly assigning each rendered report card its `data-report-id` attribute.

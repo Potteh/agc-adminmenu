@@ -54,7 +54,7 @@ function renderReports() {
   reportCount.textContent = open;
 
   reportsList.innerHTML = data.reports.length ? [...data.reports].reverse().map(r => `
-    <div class="card">
+    <div class="card" data-report-id="${r.id}">
       <div class="name">Report #${r.id} — ${escapeHtml(r.status.toUpperCase())}</div>
       <div class="sub">From ${escapeHtml(r.reporter)} (${r.reporterId}) · Target: ${escapeHtml(r.targetName)}${r.target ? ` (${r.target})` : ''}</div>
       <div class="sub">${escapeHtml(r.created)}</div>
@@ -113,7 +113,10 @@ function replyReport(id) {
   }
 
   const reportCard = document.querySelector(`[data-report-id="${id}"]`);
-  if (!reportCard) return;
+  if (!reportCard) {
+    showToast('Unable to open reply box. Refresh the reports list and try again.');
+    return;
+  }
 
   const box = document.createElement('div');
   box.id = `reply-box-${id}`;
