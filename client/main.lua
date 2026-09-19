@@ -48,6 +48,61 @@ RegisterNetEvent('fadm:kill', function()
     SetEntityHealth(ped, 0)
 end)
 
+RegisterNetEvent('fadm:revive', function()
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    local heading = GetEntityHeading(ped)
+    NetworkResurrectLocalPlayer(coords.x, coords.y, coords.z, heading, true, false)
+    ClearPedBloodDamage(ped)
+    ClearPedTasksImmediately(ped)
+    SetEntityHealth(ped, GetEntityMaxHealth(ped))
+end)
+
+RegisterNetEvent('fadm:heal', function()
+    local ped = PlayerPedId()
+    ClearPedBloodDamage(ped)
+    SetEntityHealth(ped, GetEntityMaxHealth(ped))
+end)
+
+RegisterNetEvent('fadm:wildDogs', function(count)
+    local targetPed = PlayerPedId()
+    local model = joaat('a_c_rottweiler')
+    count = math.max(1, math.min(tonumber(count) or 4, 8))
+
+    RequestModel(model)
+    local timeout = GetGameTimer() + 5000
+    while not HasModelLoaded(model) and GetGameTimer() < timeout do Wait(0) end
+    if not HasModelLoaded(model) then return end
+
+    local c = GetEntityCoords(targetPed)
+    for i = 1, count do
+        local angle = (math.pi * 2 / count) * i
+        local radius = 7.0 + math.random() * 4.0
+        local dog = CreatePed(28, model,
+            c.x + math.cos(angle) * radius,
+            c.y + math.sin(angle) * radius,
+            c.z + 1.0, 0.0, true, true)
+
+        if DoesEntityExist(dog) then
+            SetEntityAsMissionEntity(dog, true, true)
+            SetPedFleeAttributes(dog, 0, false)
+            SetPedCombatAttributes(dog, 5, true)
+            SetPedCombatAttributes(dog, 46, true)
+            SetPedCombatAbility(dog, 2)
+            SetPedCombatRange(dog, 2)
+            SetPedSeeingRange(dog, 100.0)
+            SetPedHearingRange(dog, 100.0)
+            SetPedKeepTask(dog, true)
+            TaskCombatPed(dog, targetPed, 0, 16)
+
+            SetTimeout(120000, function()
+                if DoesEntityExist(dog) then DeleteEntity(dog) end
+            end)
+        end
+    end
+    SetModelAsNoLongerNeeded(model)
+end)
+
 RegisterNetEvent('fadm:spectate', function(target)
     if spectating then return end
 

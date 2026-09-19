@@ -37,6 +37,9 @@ function renderPlayers() {
         <button onclick="action('spectate',${p.id})">Spectate</button>
         <button onclick="action('freeze',${p.id})">Freeze</button>
         <button onclick="action('unfreeze',${p.id})">Unfreeze</button>
+        <button onclick="action('revive',${p.id})">Revive</button>
+        <button onclick="action('heal',${p.id})">Heal</button>
+        <button class="warn" onclick="action('dogs',${p.id})">Wild Dogs</button>
         <button class="warn" onclick="action('fire',${p.id})">Fire</button>
         <button class="danger" onclick="action('kill',${p.id})">Kill</button>
         <button class="danger" onclick="banPlayer(${p.id})">Ban</button>
@@ -59,6 +62,9 @@ function renderReports() {
         <div class="actions">
           ${r.target ? `<button onclick="action('spectate',${r.target})">Spectate</button>
           <button onclick="action('freeze',${r.target})">Freeze</button>
+          <button onclick="action('revive',${r.target})">Revive</button>
+          <button onclick="action('heal',${r.target})">Heal</button>
+          <button class="warn" onclick="action('dogs',${r.target})">Wild Dogs</button>
           <button class="danger" onclick="action('kill',${r.target})">Kill</button>` : ''}
           <button onclick="closeReport(${r.id})">Close Report</button>
         </div>` : ''}

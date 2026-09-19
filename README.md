@@ -9,6 +9,9 @@ A standalone FiveM resource providing:
 - Freeze / unfreeze
 - Set player on fire
 - Kill
+- Revive players
+- Heal players
+- Spawn 4 hostile wild dogs around a selected player
 - View and close player reports
 - Player report submission through the NUI or `/report [player id] [message]`
 - ACE-based server-side authorization

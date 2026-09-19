@@ -143,6 +143,18 @@ RegisterNetEvent('fadm:action', function(action, target, reason)
         TriggerClientEvent('fadm:kill', target)
         notify(src, ('Killed %s.'):format(GetPlayerName(target)))
 
+    elseif action == 'revive' then
+        TriggerClientEvent('fadm:revive', target)
+        notify(src, ('Revived %s.'):format(GetPlayerName(target)))
+
+    elseif action == 'heal' then
+        TriggerClientEvent('fadm:heal', target)
+        notify(src, ('Healed %s.'):format(GetPlayerName(target)))
+
+    elseif action == 'dogs' then
+        TriggerClientEvent('fadm:wildDogs', target, 4)
+        notify(src, ('Spawned wild dogs around %s.'):format(GetPlayerName(target)))
+
     elseif action == 'spectate' then
         TriggerClientEvent('fadm:spectate', src, target)
     else
