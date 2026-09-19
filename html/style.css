@@ -129,3 +129,13 @@ label { display: block; color: #9da8b6; margin: 15px 0 7px; font-size: 13px; }
   margin: 6px 0;
   color: #dce3ec;
 }
+
+.reply-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #303946;
+}
+.reply-box textarea {
+  min-height: 90px;
+  margin-bottom: 8px;
+}

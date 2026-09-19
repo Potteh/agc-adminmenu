@@ -78,3 +78,8 @@ ensure fivem_admin_menu
 ```
 
 If your server uses a replacement keys resource instead of `qb-vehiclekeys`, change the key event in `client/main.lua` to the event/export required by that resource.
+
+## Report reply UI
+
+Report replies use an inline FiveM NUI text box instead of JavaScript `prompt()`.
+This keeps reply entry inside the admin menu and avoids opening an external JavaScript/browser dialog.

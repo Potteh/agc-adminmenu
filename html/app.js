@@ -106,9 +106,46 @@ function closeReport(id) {
 }
 
 function replyReport(id) {
-  const message = prompt('Reply to this report:');
-  if (!message || !message.trim()) return;
-  post('replyReport', {id, message: message.trim()});
+  const existing = document.getElementById(`reply-box-${id}`);
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const reportCard = document.querySelector(`[data-report-id="${id}"]`);
+  if (!reportCard) return;
+
+  const box = document.createElement('div');
+  box.id = `reply-box-${id}`;
+  box.className = 'reply-box';
+  box.innerHTML = `
+    <textarea maxlength="500" placeholder="Type your reply to the player..."></textarea>
+    <div class="actions">
+      <button class="primary send-report-reply">Send Reply</button>
+      <button class="cancel-report-reply">Cancel</button>
+    </div>
+  `;
+
+  reportCard.appendChild(box);
+
+  const textarea = box.querySelector('textarea');
+  textarea.focus();
+
+  box.querySelector('.send-report-reply').addEventListener('click', () => {
+    const message = textarea.value.trim();
+    if (!message) {
+      showToast('Enter a reply message.');
+      return;
+    }
+
+    post('replyReport', {id, message});
+    box.remove();
+    showToast('Reply sent.');
+  });
+
+  box.querySelector('.cancel-report-reply').addEventListener('click', () => {
+    box.remove();
+  });
 }
 
 function showToast(msg) {
