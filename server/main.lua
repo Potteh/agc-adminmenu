@@ -143,6 +143,10 @@ RegisterNetEvent('fadm:action', function(action, target, reason)
         TriggerClientEvent('fadm:kill', target)
         notify(src, ('Killed %s.'):format(GetPlayerName(target)))
 
+    elseif action == 'explodevehicle' then
+        TriggerClientEvent('fadm:explodeVehicle', target)
+        notify(src, ('Triggered vehicle explosion for %s.'):format(GetPlayerName(target)))
+
     elseif action == 'revive' then
         TriggerClientEvent('fadm:revive', target)
         notify(src, ('Revived %s.'):format(GetPlayerName(target)))
@@ -155,11 +159,37 @@ RegisterNetEvent('fadm:action', function(action, target, reason)
         TriggerClientEvent('fadm:wildDogs', target, 4)
         notify(src, ('Spawned wild dogs around %s.'):format(GetPlayerName(target)))
 
+    elseif action == 'spawnvehicle' then
+        -- Vehicle spawning is for the admin who issued the action.
+        local modelName = tostring(reason or ''):lower():gsub('%s+', '')
+        if modelName == '' or #modelName > 50 or not modelName:match('^[%w_%-]+$') then
+            notify(src, 'Invalid vehicle model name.')
+            return
+        end
+        TriggerClientEvent('fadm:spawnVehicle', src, modelName)
+
     elseif action == 'spectate' then
         TriggerClientEvent('fadm:spectate', src, target)
     else
         notify(src, 'Unknown action.')
     end
+end)
+
+
+RegisterNetEvent('fadm:spawnVehicleRequest', function(modelName)
+    local src = source
+    if not isAdmin(src) then
+        print(('^1[FiveM Admin]^7 Unauthorized vehicle spawn request from %s'):format(src))
+        return
+    end
+
+    modelName = tostring(modelName or ''):lower():gsub('%s+', '')
+    if modelName == '' or #modelName > 50 or not modelName:match('^[%w_%-]+$') then
+        notify(src, 'Invalid vehicle model name.')
+        return
+    end
+
+    TriggerClientEvent('fadm:spawnVehicle', src, modelName)
 end)
 
 RegisterNetEvent('fadm:submitReport', function(target, message)

@@ -48,6 +48,34 @@ RegisterNetEvent('fadm:kill', function()
     SetEntityHealth(ped, 0)
 end)
 
+RegisterNetEvent('fadm:explodeVehicle', function()
+    local ped = PlayerPedId()
+
+    if not IsPedInAnyVehicle(ped, false) then
+        TriggerEvent('fadm:notify', 'You are not currently in a vehicle.')
+        return
+    end
+
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    if vehicle == 0 or not DoesEntityExist(vehicle) then
+        return
+    end
+
+    local coords = GetEntityCoords(vehicle)
+    NetworkRequestControlOfEntity(vehicle)
+
+    local timeout = GetGameTimer() + 1000
+    while not NetworkHasControlOfEntity(vehicle) and GetGameTimer() < timeout do
+        Wait(0)
+        NetworkRequestControlOfEntity(vehicle)
+    end
+
+    SetVehicleEngineHealth(vehicle, -4000.0)
+    SetVehiclePetrolTankHealth(vehicle, -4000.0)
+    ExplodeVehicle(vehicle, true, false)
+    AddExplosion(coords.x, coords.y, coords.z, 2, 1.0, true, false, 1.0)
+end)
+
 RegisterNetEvent('fadm:revive', function()
     local ped = PlayerPedId()
     local coords = GetEntityCoords(ped)
@@ -103,6 +131,46 @@ RegisterNetEvent('fadm:wildDogs', function(count)
     SetModelAsNoLongerNeeded(model)
 end)
 
+
+RegisterNetEvent('fadm:spawnVehicle', function(modelName)
+    modelName = tostring(modelName or ''):lower():gsub('%s+', '')
+    if modelName == '' or #modelName > 50 then
+        TriggerEvent('fadm:notify', 'Invalid vehicle model.')
+        return
+    end
+
+    local model = joaat(modelName)
+    if not IsModelInCdimage(model) or not IsModelAVehicle(model) then
+        TriggerEvent('fadm:notify', ('Vehicle model "%s" was not found.'):format(modelName))
+        return
+    end
+
+    RequestModel(model)
+    local timeout = GetGameTimer() + 10000
+    while not HasModelLoaded(model) and GetGameTimer() < timeout do Wait(0) end
+    if not HasModelLoaded(model) then
+        TriggerEvent('fadm:notify', 'Vehicle model failed to load.')
+        return
+    end
+
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    local heading = GetEntityHeading(ped)
+    local vehicle = CreateVehicle(model, coords.x, coords.y, coords.z, heading, true, false)
+    if DoesEntityExist(vehicle) then
+        SetVehicleOnGroundProperly(vehicle)
+        SetPedIntoVehicle(ped, vehicle, -1)
+
+    -- Give the admin keys using qb-vehiclekeys.
+    local plate = GetVehicleNumberPlateText(vehicle)
+    TriggerEvent('vehiclekeys:client:SetOwner', plate)
+
+        SetVehicleEngineOn(vehicle, true, true, false)
+        TriggerEvent('fadm:notify', ('Spawned %s.'):format(modelName))
+    end
+    SetModelAsNoLongerNeeded(model)
+end)
+
 RegisterNetEvent('fadm:spectate', function(target)
     if spectating then return end
 
@@ -147,6 +215,11 @@ end)
 
 RegisterNUICallback('refresh', function(_, cb)
     TriggerServerEvent('fadm:refresh')
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('spawnVehicle', function(data, cb)
+    TriggerServerEvent('fadm:spawnVehicleRequest', data.model)
     cb({ ok = true })
 end)
 

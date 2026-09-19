@@ -9,9 +9,11 @@ A standalone FiveM resource providing:
 - Freeze / unfreeze
 - Set player on fire
 - Kill
+- Explode the vehicle a selected player is currently occupying
 - Revive players
 - Heal players
 - Spawn 4 hostile wild dogs around a selected player
+- Spawn vehicles by GTA/FiveM model name from the admin menu
 - View and close player reports
 - Player report submission through the NUI or `/report [player id] [message]`
 - ACE-based server-side authorization
@@ -56,3 +58,22 @@ Recommended additions before public deployment:
 - Server-side reason length/character validation
 - Staff-only report visibility and pagination
 - Better spectate camera/vehicle handling
+
+
+## QBCore vehicle keys
+
+Admin-spawned vehicles now trigger the standard QBCore `qb-vehiclekeys` ownership event:
+
+```lua
+TriggerEvent('vehiclekeys:client:SetOwner', GetVehicleNumberPlateText(vehicle))
+```
+
+Make sure `qb-vehiclekeys` is started before this admin resource:
+
+```cfg
+ensure qb-core
+ensure qb-vehiclekeys
+ensure fivem_admin_menu
+```
+
+If your server uses a replacement keys resource instead of `qb-vehiclekeys`, change the key event in `client/main.lua` to the event/export required by that resource.

@@ -41,6 +41,7 @@ function renderPlayers() {
         <button onclick="action('heal',${p.id})">Heal</button>
         <button class="warn" onclick="action('dogs',${p.id})">Wild Dogs</button>
         <button class="warn" onclick="action('fire',${p.id})">Fire</button>
+        <button class="danger" onclick="action('explodevehicle',${p.id})">Explode Vehicle</button>
         <button class="danger" onclick="action('kill',${p.id})">Kill</button>
         <button class="danger" onclick="banPlayer(${p.id})">Ban</button>
       </div>
@@ -65,6 +66,7 @@ function renderReports() {
           <button onclick="action('revive',${r.target})">Revive</button>
           <button onclick="action('heal',${r.target})">Heal</button>
           <button class="warn" onclick="action('dogs',${r.target})">Wild Dogs</button>
+          <button class="danger" onclick="action('explodevehicle',${r.target})">Explode Vehicle</button>
           <button class="danger" onclick="action('kill',${r.target})">Kill</button>` : ''}
           <button onclick="closeReport(${r.id})">Close Report</button>
         </div>` : ''}
@@ -111,6 +113,13 @@ document.querySelectorAll('.tab').forEach(btn => {
 
 document.getElementById('playerSearch').addEventListener('input', renderPlayers);
 document.getElementById('refresh').addEventListener('click', () => post('refresh'));
+
+document.getElementById('spawnVehicle').addEventListener('click', () => {
+  const model = document.getElementById('vehicleModel').value.trim();
+  if (!model) return showToast('Enter a vehicle spawn/model name.');
+  post('spawnVehicle', {model});
+});
+
 
 document.getElementById('submitReport').addEventListener('click', () => {
   const target = document.getElementById('reportTarget').value;
