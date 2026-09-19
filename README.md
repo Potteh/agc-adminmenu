@@ -87,3 +87,7 @@ This keeps reply entry inside the admin menu and avoids opening an external Java
 
 ## v8 fix
 Fixed the report Reply button by correctly assigning each rendered report card its `data-report-id` attribute.
+
+
+## v9 UI overhaul
+Rebuilt the NUI with dashboard navigation, live counters, interactive player cards, report filters, inline report replies, confirmation dialogs for destructive actions, quick vehicle spawning, responsive layout, and stacked notifications.

@@ -1,59 +1,96 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FiveM Admin</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FiveM Admin</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app" class="hidden">
-    <div class="panel">
+<div id="app" class="hidden">
+  <div class="shell">
+    <aside>
+      <div class="brand">
+        <div class="logo">A</div>
+        <div><strong>ADMIN</strong><span>CONTROL CENTER</span></div>
+      </div>
+      <nav>
+        <button class="nav active" data-tab="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav" data-tab="players">♟ <span>Players</span><b id="playerCount">0</b></button>
+        <button class="nav" data-tab="reports">⚑ <span>Reports</span><b id="reportCount">0</b></button>
+        <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
+      </nav>
+      <div class="side-foot"><span class="online-dot"></span> Admin session active</div>
+    </aside>
+
+    <section class="workspace">
       <header>
         <div>
-          <h1>Admin Panel</h1>
-          <span id="status">Ready</span>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSub">Server administration overview</p>
         </div>
-        <button id="close" class="icon">×</button>
+        <div class="header-actions">
+          <button id="refresh" class="ghost">↻ Refresh</button>
+          <button id="close" class="close">×</button>
+        </div>
       </header>
 
-      <nav>
-        <button class="tab active" data-tab="players">Players</button>
-        <button class="tab" data-tab="reports">Reports <b id="reportCount">0</b></button>
-        <button class="tab" data-tab="reportForm">Submit Report</button>
-      </nav>
-
       <main>
-        <section id="players" class="tabpage active">
-          <div class="toolbar">
-            <input id="playerSearch" placeholder="Search players...">
-            <input id="vehicleModel" placeholder="Vehicle model (e.g. adder)">
-            <button id="spawnVehicle">Spawn Vehicle</button>
-            <button id="refresh">Refresh</button>
+        <section id="dashboard" class="page active">
+          <div class="stats">
+            <button class="stat" data-jump="players"><span>PLAYERS ONLINE</span><strong id="dashPlayers">0</strong><small>View player list →</small></button>
+            <button class="stat" data-jump="reports"><span>OPEN REPORTS</span><strong id="dashReports">0</strong><small>Review reports →</small></button>
+            <div class="stat"><span>ADMIN STATUS</span><strong class="good">ACTIVE</strong><small>ACE authorized</small></div>
           </div>
-          <div id="playersList" class="list"></div>
+          <div class="section-head"><div><h2>Quick Actions</h2><p>Common administrative tools</p></div></div>
+          <div class="quick">
+            <button data-jump="players"><span class="qicon">♟</span><b>Manage Players</b><small>Moderation, spectate & actions</small></button>
+            <button data-jump="reports"><span class="qicon">⚑</span><b>Player Reports</b><small>Review and reply to reports</small></button>
+            <button id="quickVehicle"><span class="qicon">▣</span><b>Spawn Vehicle</b><small>Create a vehicle for yourself</small></button>
+          </div>
+          <div id="vehiclePanel" class="drawer hidden">
+            <div><h3>Spawn Vehicle</h3><p>Enter a GTA vehicle model name.</p></div>
+            <div class="inline"><input id="vehicleModel" placeholder="e.g. sultan, adder, police"><button id="spawnVehicle" class="primary">Spawn</button></div>
+          </div>
         </section>
 
-        <section id="reports" class="tabpage">
-          <div id="reportsList" class="list"></div>
+        <section id="players" class="page">
+          <div class="toolbar">
+            <div class="search">⌕ <input id="playerSearch" placeholder="Search by player name or server ID"></div>
+          </div>
+          <div id="playersList" class="cards"></div>
         </section>
 
-        <section id="reportForm" class="tabpage">
-          <div class="card">
-            <h2>Submit Player Report</h2>
-            <label>Player ID (optional)</label>
+        <section id="reports" class="page">
+          <div class="section-head"><div><h2>Player Reports</h2><p>Respond to active reports and take action.</p></div>
+          <select id="reportFilter"><option value="all">All reports</option><option value="open">Open only</option><option value="closed">Closed only</option></select></div>
+          <div id="reportsList" class="cards"></div>
+        </section>
+
+        <section id="reportForm" class="page">
+          <div class="form-card">
+            <h2>Submit Player Report</h2><p>Report another player to the administration team.</p>
+            <label>Player Server ID <span>optional</span></label>
             <input id="reportTarget" type="number" min="1" placeholder="Server ID">
-            <label>Reason / details</label>
+            <label>Report details</label>
             <textarea id="reportMessage" maxlength="500" placeholder="Describe what happened..."></textarea>
-            <button id="submitReport" class="primary">Submit Report</button>
+            <div class="form-foot"><span id="charCount">0 / 500</span><button id="submitReport" class="primary">Submit Report</button></div>
           </div>
         </section>
       </main>
-    </div>
+    </section>
   </div>
 
-  <div id="toast"></div>
-
+  <div id="confirm" class="modal hidden">
+    <div class="modal-card">
+      <div class="danger-icon">!</div><h2 id="confirmTitle">Confirm action</h2>
+      <p id="confirmText"></p>
+      <div id="reasonWrap" class="hidden"><label>Reason</label><input id="confirmReason" maxlength="180" placeholder="Enter reason..."></div>
+      <div class="modal-actions"><button id="confirmCancel">Cancel</button><button id="confirmGo" class="danger">Confirm</button></div>
+    </div>
+  </div>
+</div>
+<div id="toastStack"></div>
 <script src="app.js"></script>
 </body>
 </html>
