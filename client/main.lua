@@ -563,3 +563,16 @@ RegisterNUICallback('setPlayerJob', function(data, cb)
     TriggerServerEvent('fadm:setPlayerJob', tonumber(data.target), tostring(data.job or ''), tonumber(data.grade) or 0)
     cb({ok=true})
 end)
+
+RegisterNUICallback('getCoords', function(_, cb)
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    local heading = GetEntityHeading(ped)
+    cb({
+        ok = true,
+        x = coords.x,
+        y = coords.y,
+        z = coords.z,
+        heading = heading
+    })
+end)

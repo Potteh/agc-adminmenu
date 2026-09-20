@@ -225,3 +225,8 @@ The v26 job event was accidentally registered before the local `isAdmin` and
 `notify` functions were declared. In Lua that handler therefore resolved those
 names as globals and failed when invoked. v27 registers the handler after the
 helpers are defined and explicitly refreshes QBCore player/job data on the target.
+
+## v28 Developer tools
+Added a Developer sidebar page with live player coordinate lookup. It displays X,
+Y, Z, heading, a ready-to-use `vector3(x, y, z)`, and `vector4(x, y, z, heading)`.
+The page includes refresh and copy buttons.

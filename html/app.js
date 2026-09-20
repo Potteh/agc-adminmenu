@@ -4,7 +4,7 @@ const resource=()=>GetParentResourceName();
 function post(endpoint,body={}){return fetch(`https://${resource()}/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;$('#toastStack').appendChild(el);setTimeout(()=>el.remove(),3200)}
-const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],world:['World Controls','Server-wide time, weather and environment effects'],reportForm:['Submit Report','Send a report to the administration team']};
+const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],world:['World Controls','Server-wide time, weather and environment effects'],developer:['Developer','Coordinates and development utilities'],reportForm:['Submit Report','Send a report to the administration team']};
 function go(tab){$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));$$('.page').forEach(x=>x.classList.toggle('active',x.id===tab));$('#pageTitle').textContent=titles[tab][0];$('#pageSub').textContent=titles[tab][1]}
 $$('.nav').forEach(b=>b.onclick=()=>go(b.dataset.tab)); $$('[data-jump]').forEach(b=>b.onclick=()=>go(b.dataset.jump));
 function initials(n){return String(n||'?').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
@@ -183,3 +183,20 @@ document.addEventListener('click',async e=>{
    $('#jobModal').classList.add('hidden');toast(`Job request sent: ${job} grade ${grade}`);jobTarget=null;
  }
 });
+
+function coordNum(v){ return Number(v||0).toFixed(4); }
+async function refreshDeveloperCoords(){
+  try{
+    const r=await post('getCoords');
+    const d=await r.json();
+    if(!d || !d.ok) return;
+    const x=coordNum(d.x), y=coordNum(d.y), z=coordNum(d.z), h=coordNum(d.heading);
+    $('#coordX').value=x; $('#coordY').value=y; $('#coordZ').value=z;
+    $('#coordVector3').value=`vector3(${x}, ${y}, ${z})`;
+    $('#coordVector4').value=`vector4(${x}, ${y}, ${z}, ${h})`;
+  }catch(e){ toast('Could not read coordinates.'); }
+}
+$('#getCoords').onclick=refreshDeveloperCoords;
+$('#copyVector3').onclick=async()=>{try{await navigator.clipboard.writeText($('#coordVector3').value);toast('Vector3 copied.')}catch(e){toast('Copy unavailable; select the text manually.')}};
+$('#copyVector4').onclick=async()=>{try{await navigator.clipboard.writeText($('#coordVector4').value);toast('Vector4 copied.')}catch(e){toast('Copy unavailable; select the text manually.')}};
+document.querySelector('[data-tab="developer"]').addEventListener('click',()=>setTimeout(refreshDeveloperCoords,0));

@@ -19,6 +19,7 @@
         <button class="nav" data-tab="players">♟ <span>Players</span><b id="playerCount">0</b></button>
         <button class="nav" data-tab="reports">⚑ <span>Reports</span><b id="reportCount">0</b></button>
         <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
+        <button class="nav" data-tab="developer">⌘ <span>Developer</span></button>
         <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
       </nav>
       <div class="side-foot"><span class="online-dot"></span> Admin session active</div>
@@ -78,6 +79,27 @@
             <article class="world-card"><div class="world-icon">◐</div><h3>Blackout</h3><p>Control the qb-weathersync server-wide blackout state.</p><div class="world-actions"><button class="danger" data-world="blackout" data-value="true">Enable Blackout</button><button data-world="blackout" data-value="false">Disable Blackout</button></div></article>
             <article class="world-card restart-card"><div class="world-icon">⚠</div><h3>Restart Sequence</h3><p>Start a 2-minute severe-thunderstorm warning with a storm siren before the configured server restart action.</p><div class="world-actions"><button id="restartSequenceBtn" class="danger">Start 2-Minute Restart</button></div></article>
             <article class="world-card earthquake-card"><div class="world-icon">⌁</div><h3>Earthquake</h3><p>Shake every player's camera for 15 seconds. Players on foot may lose their footing and fall over.</p><div class="world-actions"><button id="earthquakeBtn" class="danger">Initiate Earthquake</button></div></article>
+          </div>
+        </section>
+
+        <section id="developer" class="page">
+          <div class="section-head"><div><h2>Developer Tools</h2><p>Quick utilities for building and configuring server resources.</p></div></div>
+          <div class="world-grid">
+            <article class="world-card developer-card">
+              <div class="world-icon">⌖</div>
+              <h3>Player Coordinates</h3>
+              <p>Read your current world position. Move anywhere and press refresh to update it.</p>
+              <div class="coord-grid">
+                <label>X<input id="coordX" readonly value="--"></label>
+                <label>Y<input id="coordY" readonly value="--"></label>
+                <label>Z<input id="coordZ" readonly value="--"></label>
+              </div>
+              <label>Vector3</label>
+              <div class="inline"><input id="coordVector3" readonly value="vector3(0.0, 0.0, 0.0)"><button id="copyVector3">Copy</button></div>
+              <label>Vector4 / Heading</label>
+              <div class="inline"><input id="coordVector4" readonly value="vector4(0.0, 0.0, 0.0, 0.0)"><button id="copyVector4">Copy</button></div>
+              <div class="world-actions"><button id="getCoords" class="primary">Get Current Coords</button></div>
+            </article>
           </div>
         </section>
         <section id="reportForm" class="page">
