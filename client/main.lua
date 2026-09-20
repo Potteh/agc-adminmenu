@@ -637,3 +637,37 @@ CreateThread(function()
         end
     end
 end)
+
+
+-- Optional acg_radio admin integration
+RegisterNetEvent('fadm:radioData', function(data)
+    SendNUIMessage({ action = 'radioData', data = data or { available = false, radios = {} } })
+end)
+
+RegisterNUICallback('radioRefresh', function(_, cb)
+    TriggerServerEvent('fadm:radioRefresh')
+    cb({ok=true})
+end)
+
+RegisterNUICallback('radioStop', function(data, cb)
+    TriggerServerEvent('fadm:radioStop', tonumber(data.netId))
+    cb({ok=true})
+end)
+
+RegisterNUICallback('radioStopAll', function(_, cb)
+    TriggerServerEvent('fadm:radioStopAll')
+    cb({ok=true})
+end)
+
+RegisterNUICallback('radioTeleport', function(data, cb)
+    TriggerServerEvent('fadm:radioTeleport', tonumber(data.netId))
+    cb({ok=true})
+end)
+
+RegisterNetEvent('fadm:teleportToRadioCoords', function(x, y, z, netId)
+    x, y, z = tonumber(x), tonumber(y), tonumber(z)
+    if not x or not y or not z then return end
+    local ped = PlayerPedId()
+    SetEntityCoords(ped, x + 2.0, y + 2.0, z + 1.0, false, false, false, false)
+    TriggerEvent('fadm:notify', ('Teleported to radio vehicle #%s.'):format(tostring(netId or '?')))
+end)

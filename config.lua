@@ -26,3 +26,10 @@ Config.RestartSirenSoundSet = 'DLC_sum20_Business_Battle_AC_Sounds'
 Config.RestartUseQuitCommand = false
 
 Config.AdminWorldSyncIntervalMs = 2000
+
+
+-- Optional ACG Radio integration. acg_radio is NOT a dependency.
+Config.AcgRadio = {
+    Enabled = true,
+    ResourceName = 'acg_radio'
+}
