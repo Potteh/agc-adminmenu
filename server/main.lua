@@ -49,14 +49,24 @@ end
 
 local function playerList()
     local list = {}
+    local QBCore = exports['qb-core']:GetCoreObject()
     for _, id in ipairs(GetPlayers()) do
         local src = tonumber(id)
-        list[#list + 1] = {
-            id = src,
-            name = GetPlayerName(src) or ('Player ' .. src)
+        local platformName = GetPlayerName(src) or ('Player ' .. src)
+        local characterName = 'Character not loaded'
+        local Player = QBCore.Functions.GetPlayer(src)
+        if Player and Player.PlayerData and Player.PlayerData.charinfo then
+            local ci = Player.PlayerData.charinfo
+            local full = (tostring(ci.firstname or '') .. ' ' .. tostring(ci.lastname or '')):gsub('^%s+',''):gsub('%s+$','')
+            if full ~= '' then characterName = full end
+        end
+        list[#list+1] = {
+            id=src, name=platformName,
+            rockstarName=platformName,
+            characterName=characterName
         }
     end
-    table.sort(list, function(a,b) return a.id < b.id end)
+    table.sort(list,function(x,y) return x.id < y.id end)
     return list
 end
 

@@ -212,3 +212,7 @@ changes the target's standard GTA freemode clothing components for top/undershir
 pants and shoes to minimal/default freemode variants. The affected component
 variations are saved client-side and Restore Clothes puts the previous variations
 back for that session. No custom nude model or explicit texture is included.
+
+## v25 Player identities
+Player cards now display QBCore character first/last name, FiveM/Rockstar display
+name, and server ID. Search matches all three.
