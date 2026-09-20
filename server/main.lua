@@ -322,3 +322,59 @@ RegisterCommand('admin', function(src)
     end
     TriggerClientEvent('fadm:open', src)
 end, false)
+
+RegisterNetEvent('fadm:worldAction', function(action, value)
+    local src = source
+    if not isAdmin(src) then return end
+
+    if GetResourceState('qb-weathersync') ~= 'started' then
+        notify(src, 'qb-weathersync is not running.')
+        return
+    end
+
+    if action == 'time' then
+        local hour = tonumber(value)
+        if hour ~= 0 and hour ~= 12 then return end
+
+        local success = exports['qb-weathersync']:setTime(hour, 0)
+        if success then
+            notify(src, hour == 0 and 'Server changed to night.' or 'Server changed to day.')
+        else
+            notify(src, 'Unable to change server time.')
+        end
+
+    elseif action == 'weather' then
+        local allowed = {
+            CLEAR=true, EXTRASUNNY=true, CLOUDS=true, OVERCAST=true,
+            RAIN=true, THUNDER=true, FOGGY=true, SMOG=true, SNOW=true,
+            BLIZZARD=true, XMAS=true
+        }
+
+        local weather = tostring(value or ''):upper()
+        if not allowed[weather] then
+            notify(src, 'Invalid weather preset.')
+            return
+        end
+
+        local success = exports['qb-weathersync']:setWeather(weather)
+        if success then
+            notify(src, ('Weather changed to %s.'):format(weather))
+        else
+            notify(src, ('qb-weathersync rejected weather type %s.'):format(weather))
+        end
+
+    elseif action == 'dynamicweather' then
+        local enabled = value == true or value == 'true' or value == 1 or value == '1'
+        local state = exports['qb-weathersync']:setDynamicWeather(enabled)
+        notify(src, state and 'Dynamic weather enabled.' or 'Dynamic weather disabled.')
+
+    elseif action == 'blackout' then
+        local enabled = value == true or value == 'true' or value == 1 or value == '1'
+        local state = exports['qb-weathersync']:setBlackout(enabled)
+        notify(src, state and 'Blackout enabled.' or 'Blackout disabled.')
+
+    elseif action == 'earthquake' then
+        TriggerClientEvent('fadm:earthquake', -1, Config.EarthquakeDurationMs, Config.EarthquakeIntensity)
+        notify(src, 'Earthquake initiated for all players.')
+    end
+end)

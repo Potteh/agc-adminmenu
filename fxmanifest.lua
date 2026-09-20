@@ -25,3 +25,5 @@ files {
     'html/style.css',
     'html/app.js'
 }
+
+dependency 'qb-weathersync'

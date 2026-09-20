@@ -18,6 +18,7 @@
         <button class="nav active" data-tab="dashboard">⌂ <span>Dashboard</span></button>
         <button class="nav" data-tab="players">♟ <span>Players</span><b id="playerCount">0</b></button>
         <button class="nav" data-tab="reports">⚑ <span>Reports</span><b id="reportCount">0</b></button>
+        <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
         <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
       </nav>
       <div class="side-foot"><span class="online-dot"></span> Admin session active</div>
@@ -67,6 +68,17 @@
           <div id="reportsList" class="cards"></div>
         </section>
 
+
+        <section id="world" class="page">
+          <div class="section-head"><div><h2>World Controls</h2><p>Synchronize time, weather and global effects for connected players.</p></div></div>
+          <div class="world-grid">
+            <article class="world-card"><div class="world-icon">☀</div><h3>Time of Day</h3><p>Switch everyone between midday and midnight.</p><div class="world-actions"><button class="primary" data-world="time" data-value="12">Set Day</button><button data-world="time" data-value="0">Set Night</button></div></article>
+            <article class="world-card"><div class="world-icon">☁</div><h3>Weather</h3><p>Apply a GTA weather preset to all players.</p><select id="weatherPreset"><option value="CLEAR">Clear</option><option value="EXTRASUNNY">Extra Sunny</option><option value="CLOUDS">Cloudy</option><option value="OVERCAST">Overcast</option><option value="RAIN">Rain</option><option value="THUNDER">Thunderstorm</option><option value="FOGGY">Foggy</option><option value="SMOG">Smog</option><option value="SNOW">Snow</option><option value="BLIZZARD">Blizzard</option><option value="XMAS">Christmas Snow</option></select><div class="world-actions"><button id="applyWeather" class="primary">Apply Weather</button></div></article>
+            <article class="world-card"><div class="world-icon">↻</div><h3>Dynamic Weather</h3><p>Enable or disable qb-weathersync automatic weather progression.</p><div class="world-actions"><button class="primary" data-world="dynamicweather" data-value="true">Enable</button><button data-world="dynamicweather" data-value="false">Disable</button></div></article>
+            <article class="world-card"><div class="world-icon">◐</div><h3>Blackout</h3><p>Control the qb-weathersync server-wide blackout state.</p><div class="world-actions"><button class="danger" data-world="blackout" data-value="true">Enable Blackout</button><button data-world="blackout" data-value="false">Disable Blackout</button></div></article>
+            <article class="world-card earthquake-card"><div class="world-icon">⌁</div><h3>Earthquake</h3><p>Shake every player's camera for 15 seconds. Players on foot may lose their footing and fall over.</p><div class="world-actions"><button id="earthquakeBtn" class="danger">Initiate Earthquake</button></div></article>
+          </div>
+        </section>
         <section id="reportForm" class="page">
           <div class="form-card">
             <h2>Submit Player Report</h2><p>Report another player to the administration team.</p>

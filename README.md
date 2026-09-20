@@ -91,3 +91,35 @@ Fixed the report Reply button by correctly assigning each rendered report card i
 
 ## v9 UI overhaul
 Rebuilt the NUI with dashboard navigation, live counters, interactive player cards, report filters, inline report replies, confirmation dialogs for destructive actions, quick vehicle spawning, responsive layout, and stacked notifications.
+
+
+## v10 World Controls
+- Day/night server controls
+- Global weather presets
+- 15-second global earthquake camera-shake effect
+- All world actions validated with the existing server-side ACE admin permission
+
+If a separate QBCore weather/time sync resource is active, it may overwrite native time/weather. Integrate these actions with that resource if necessary.
+
+## v11 qb-weathersync integration
+
+World Controls now use qb-weathersync's official server exports:
+- `exports['qb-weathersync']:setTime(hour, minute)`
+- `exports['qb-weathersync']:setWeather(weather)`
+
+The old native client-side time/weather overrides were removed so they no longer
+fight qb-weathersync. Earthquake remains a server-broadcast gameplay-camera effect.
+
+Recommended resource order:
+```
+ensure qb-core
+ensure qb-weathersync
+ensure fivem_admin_menu
+```
+
+## v12 Environment controls
+
+- Dynamic Weather Enable/Disable uses `qb-weathersync:setDynamicWeather`.
+- Blackout Enable/Disable uses `qb-weathersync:setBlackout`.
+- Earthquake now causes eligible players who are on foot to intermittently ragdoll during the 15-second quake.
+- Players in vehicles are not ragdolled by the earthquake.

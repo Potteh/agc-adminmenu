@@ -11,3 +11,6 @@ Config.BanFile = 'bans.json'
 
 -- How long a player remains on fire when using the menu.
 Config.FireDurationMs = 5000
+
+Config.EarthquakeDurationMs = 15000
+Config.EarthquakeIntensity = 1.0

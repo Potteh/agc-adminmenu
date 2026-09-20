@@ -286,3 +286,48 @@ RegisterNUICallback('submitReport', function(data, cb)
     TriggerServerEvent('fadm:submitReport', tonumber(data.target), data.message)
     cb({ ok = true })
 end)
+
+
+RegisterNetEvent('fadm:earthquake', function(duration, intensity)
+    duration = tonumber(duration) or 15000
+    intensity = tonumber(intensity) or 1.0
+
+    CreateThread(function()
+        local finish = GetGameTimer() + duration
+        local nextRagdoll = 0
+
+        while GetGameTimer() < finish do
+            ShakeGameplayCam('LARGE_EXPLOSION_SHAKE', intensity)
+
+            local ped = PlayerPedId()
+            local now = GetGameTimer()
+
+            -- Players on foot can lose their footing during the quake.
+            -- Do not ragdoll dead players, players in vehicles, or players already falling.
+            if now >= nextRagdoll
+                and DoesEntityExist(ped)
+                and not IsEntityDead(ped)
+                and not IsPedInAnyVehicle(ped, false)
+                and not IsPedFalling(ped)
+                and not IsPedRagdoll(ped) then
+
+                -- About a 45% chance each check so falling feels irregular rather than constant.
+                if math.random(100) <= 45 then
+                    SetPedToRagdoll(ped, 1200, 1800, 0, false, false, false)
+                    nextRagdoll = now + math.random(1800, 3200)
+                else
+                    nextRagdoll = now + 900
+                end
+            end
+
+            Wait(350)
+        end
+
+        StopGameplayCamShaking(true)
+    end)
+end)
+
+RegisterNUICallback('worldAction', function(data, cb)
+    TriggerServerEvent('fadm:worldAction', data.action, data.value)
+    cb({ok=true})
+end)
