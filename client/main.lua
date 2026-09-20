@@ -430,50 +430,51 @@ CreateThread(function()
 end)
 
 
-RegisterNetEvent('fadm:requestTeleportCoords', function(destinationPlayer, mode)
+-- v18 teleport implementation.
+RegisterNetEvent('fadm:sendMyCoordsForTeleport', function(destination, mode)
     local ped = PlayerPedId()
     local coords = GetEntityCoords(ped)
-    local heading = GetEntityHeading(ped)
-
-    TriggerServerEvent('fadm:returnTeleportCoords', destinationPlayer, mode, {
-        x = coords.x,
-        y = coords.y,
-        z = coords.z
-    }, heading)
+    TriggerServerEvent(
+        'fadm:teleportCoordsResponse',
+        tonumber(destination),
+        tostring(mode),
+        coords.x, coords.y, coords.z,
+        GetEntityHeading(ped)
+    )
 end)
 
-RegisterNetEvent('fadm:performTeleport', function(coords, heading)
-    if type(coords) ~= 'table' then return end
+RegisterNetEvent('fadm:teleportNow', function(x, y, z, heading)
+    x, y, z = tonumber(x), tonumber(y), tonumber(z)
+    if not x or not y or not z then return end
 
     local ped = PlayerPedId()
     local entity = ped
-
-    -- If the player is driving, move their vehicle with them. Passengers are
-    -- teleported individually so we do not unexpectedly move someone else's vehicle.
     if IsPedInAnyVehicle(ped, false) then
-        local vehicle = GetVehiclePedIsIn(ped, false)
-        if GetPedInVehicleSeat(vehicle, -1) == ped then
-            entity = vehicle
+        local veh = GetVehiclePedIsIn(ped, false)
+        if veh ~= 0 and GetPedInVehicleSeat(veh, -1) == ped then
+            entity = veh
         end
     end
 
-    DoScreenFadeOut(250)
-    while not IsScreenFadedOut() do Wait(0) end
+    DoScreenFadeOut(200)
+    local timeout = GetGameTimer() + 1000
+    while not IsScreenFadedOut() and GetGameTimer() < timeout do Wait(0) end
 
-    RequestCollisionAtCoord(tonumber(coords.x) or 0.0, tonumber(coords.y) or 0.0, tonumber(coords.z) or 0.0)
-    SetEntityCoordsNoOffset(entity,
-        tonumber(coords.x) or 0.0,
-        tonumber(coords.y) or 0.0,
-        (tonumber(coords.z) or 0.0) + 0.25,
-        false, false, false
-    )
-    SetEntityHeading(entity, tonumber(heading) or 0.0)
+    RequestCollisionAtCoord(x, y, z)
+    FreezeEntityPosition(entity, true)
+    SetEntityCoordsNoOffset(entity, x, y, z + 0.5, false, false, false)
+    SetEntityHeading(entity, tonumber(heading) or GetEntityHeading(entity))
+    Wait(250)
+    FreezeEntityPosition(entity, false)
 
-    Wait(300)
-    DoScreenFadeIn(250)
+    DoScreenFadeIn(200)
 end)
 
 RegisterNUICallback('teleportAction', function(data, cb)
-    TriggerServerEvent('fadm:teleportAction', data.action, tonumber(data.target))
-    cb({ok=true})
+    local action = tostring(data.action or '')
+    local target = tonumber(data.target)
+    if (action == 'goto' or action == 'bring') and target then
+        TriggerServerEvent('fadm:teleportAction', action, target)
+    end
+    cb({ ok = true })
 end)

@@ -164,3 +164,10 @@ Each player card now includes:
 
 Teleport requests are authorized server-side with the existing admin ACE check.
 If the teleported player is the driver of a vehicle, their vehicle moves with them.
+
+## v18 Teleport fix
+Reworked Bring / Go To into a simpler client-server-client coordinate exchange.
+The NUI buttons now have a dedicated delegated click handler and explicit
+`type="button"`, preventing other player-card click handling from swallowing the
+teleport action. Coordinates are sent as individual numeric event arguments
+instead of a Lua table, improving FiveM event compatibility.
