@@ -328,3 +328,50 @@ RegisterNUICallback('worldAction', function(data, cb)
     TriggerServerEvent('fadm:worldAction', data.action, data.value)
     cb({ok=true})
 end)
+
+local restartSirenId = nil
+
+RegisterNetEvent('fadm:restartWarningStart', function(seconds)
+    seconds = tonumber(seconds) or 120
+
+    SendNUIMessage({
+        action = 'restartWarning',
+        seconds = seconds,
+        message = 'SEVERE THUNDERSTORM - SERVER RESTART'
+    })
+
+    -- Play a frontend siren/alarm sound locally for every player.
+    if restartSirenId then
+        StopSound(restartSirenId)
+        ReleaseSoundId(restartSirenId)
+    end
+
+    restartSirenId = GetSoundId()
+    PlaySoundFrontend(restartSirenId,
+        Config.RestartSirenSoundName or 'Air_Defences_Activated',
+        Config.RestartSirenSoundSet or 'DLC_sum20_Business_Battle_AC_Sounds',
+        true
+    )
+
+    CreateThread(function()
+        Wait(12000)
+        if restartSirenId then
+            StopSound(restartSirenId)
+            ReleaseSoundId(restartSirenId)
+            restartSirenId = nil
+        end
+    end)
+end)
+
+RegisterNetEvent('fadm:restartCountdown', function(seconds)
+    SendNUIMessage({ action = 'restartCountdown', seconds = tonumber(seconds) or 0 })
+end)
+
+RegisterNetEvent('fadm:restartNow', function()
+    SendNUIMessage({ action = 'restartNow' })
+end)
+
+RegisterNUICallback('startRestartSequence', function(_, cb)
+    TriggerServerEvent('fadm:startRestartSequence')
+    cb({ok=true})
+end)

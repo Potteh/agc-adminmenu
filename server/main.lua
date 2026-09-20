@@ -382,3 +382,64 @@ RegisterNetEvent('fadm:worldAction', function(action, value)
         notify(src, 'Earthquake initiated for all players.')
     end
 end)
+
+local restartSequenceActive = false
+
+RegisterNetEvent('fadm:startRestartSequence', function()
+    local src = source
+    if not isAdmin(src) then return end
+
+    if restartSequenceActive then
+        notify(src, 'A restart sequence is already active.')
+        return
+    end
+
+    restartSequenceActive = true
+
+    CreateThread(function()
+        local seconds = tonumber(Config.RestartWarningSeconds) or 120
+        local storm = tostring(Config.RestartStormWeather or 'THUNDER')
+
+        -- Disable dynamic weather so the warning storm is not replaced.
+        if GetResourceState('qb-weathersync') == 'started' then
+            exports['qb-weathersync']:setDynamicWeather(false)
+            exports['qb-weathersync']:setWeather(storm)
+            TriggerEvent('qb-weathersync:server:RequestStateSync')
+        end
+
+        TriggerClientEvent('fadm:restartWarningStart', -1, seconds)
+
+        -- Send countdown milestones to the NUI/HUD.
+        for remaining = seconds, 1, -1 do
+            if remaining == 120 or remaining == 60 or remaining == 30 or remaining == 15 or remaining <= 10 then
+                TriggerClientEvent('fadm:restartCountdown', -1, remaining)
+            end
+            Wait(1000)
+        end
+
+        TriggerClientEvent('fadm:restartNow', -1)
+        Wait(1500)
+
+        if Config.RestartUseQuitCommand then
+            ExecuteCommand('quit "Server restarting - please reconnect shortly."')
+        else
+            print('^3[FiveM Admin]^7 Restart warning completed. Config.RestartUseQuitCommand is false, so FXServer was not stopped.')
+            print('^3[FiveM Admin]^7 For a real txAdmin restart, schedule the restart in txAdmin; this resource can also react to txAdmin scheduled-restart events.')
+            restartSequenceActive = false
+        end
+    end)
+end)
+
+-- If txAdmin itself has a scheduled restart, automatically start the storm/siren
+-- when txAdmin reaches its official 2-minute warning.
+AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
+    if type(eventData) ~= 'table' or tonumber(eventData.secondsRemaining) ~= 120 then return end
+
+    if GetResourceState('qb-weathersync') == 'started' then
+        exports['qb-weathersync']:setDynamicWeather(false)
+        exports['qb-weathersync']:setWeather(tostring(Config.RestartStormWeather or 'THUNDER'))
+        TriggerEvent('qb-weathersync:server:RequestStateSync')
+    end
+
+    TriggerClientEvent('fadm:restartWarningStart', -1, 120)
+end)

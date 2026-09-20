@@ -76,6 +76,7 @@
             <article class="world-card"><div class="world-icon">☁</div><h3>Weather</h3><p>Apply a GTA weather preset to all players.</p><select id="weatherPreset"><option value="CLEAR">Clear</option><option value="EXTRASUNNY">Extra Sunny</option><option value="CLOUDS">Cloudy</option><option value="OVERCAST">Overcast</option><option value="RAIN">Rain</option><option value="THUNDER">Thunderstorm</option><option value="FOGGY">Foggy</option><option value="SMOG">Smog</option><option value="SNOW">Snow</option><option value="BLIZZARD">Blizzard</option><option value="XMAS">Christmas Snow</option></select><div class="world-actions"><button id="applyWeather" class="primary">Apply Weather</button></div></article>
             <article class="world-card"><div class="world-icon">↻</div><h3>Dynamic Weather</h3><p>Enable or disable qb-weathersync automatic weather progression.</p><div class="world-actions"><button class="primary" data-world="dynamicweather" data-value="true">Enable</button><button data-world="dynamicweather" data-value="false">Disable</button></div></article>
             <article class="world-card"><div class="world-icon">◐</div><h3>Blackout</h3><p>Control the qb-weathersync server-wide blackout state.</p><div class="world-actions"><button class="danger" data-world="blackout" data-value="true">Enable Blackout</button><button data-world="blackout" data-value="false">Disable Blackout</button></div></article>
+            <article class="world-card restart-card"><div class="world-icon">⚠</div><h3>Restart Sequence</h3><p>Start a 2-minute severe-thunderstorm warning with a storm siren before the configured server restart action.</p><div class="world-actions"><button id="restartSequenceBtn" class="danger">Start 2-Minute Restart</button></div></article>
             <article class="world-card earthquake-card"><div class="world-icon">⌁</div><h3>Earthquake</h3><p>Shake every player's camera for 15 seconds. Players on foot may lose their footing and fall over.</p><div class="world-actions"><button id="earthquakeBtn" class="danger">Initiate Earthquake</button></div></article>
           </div>
         </section>
@@ -102,6 +103,7 @@
     </div>
   </div>
 </div>
+<div id="restartBanner" class="restart-banner hidden"><div class="warning-pulse">⚠</div><div><strong>SEVERE THUNDERSTORM — SERVER RESTART</strong><span id="restartBannerText">Server restart in 2:00</span></div></div>
 <div id="toastStack"></div>
 <script src="app.js"></script>
 </body>

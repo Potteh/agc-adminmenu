@@ -130,3 +130,18 @@ ensure fivem_admin_menu
 - Earthquake camera intensity reduced to 0.18 and changed to a single gentle road-vibration shake.
 - On-foot ragdoll remains, with less frequent falling.
 - If `Config.RealTimeSync = true` in qb-weathersync, its real-time loop can later advance/replace manually selected time; disable real-time sync if you want manual admin time to remain authoritative.
+
+## v14 Restart warning sequence
+
+Adds an admin-menu Restart Sequence:
+- Forces qb-weathersync to THUNDER and disables dynamic weather.
+- Shows a 2-minute severe-weather restart banner to all players.
+- Plays a storm/alarm warning sound on each client for roughly 12 seconds.
+- Sends countdown milestones.
+- Integrates with `txAdmin:events:scheduledRestart`: when txAdmin broadcasts its official 2-minute scheduled-restart event, the storm and siren start automatically.
+- The manual menu sequence does NOT kill FXServer by default (`Config.RestartUseQuitCommand = false`).
+
+### Recommended restart setup
+Use txAdmin to schedule the actual restart. txAdmin officially emits scheduled restart events at 30, 15, 10, 5, 4, 3, 2, and 1 minutes, so this resource can safely attach the storm/siren to the 2-minute event.
+
+If you deliberately set `Config.RestartUseQuitCommand = true`, the manual sequence runs FiveM's `quit` command after two minutes. Only enable that if your Linux service/process manager is configured to automatically relaunch FXServer after a clean exit.
