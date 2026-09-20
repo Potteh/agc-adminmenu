@@ -145,3 +145,8 @@ Adds an admin-menu Restart Sequence:
 Use txAdmin to schedule the actual restart. txAdmin officially emits scheduled restart events at 30, 15, 10, 5, 4, 3, 2, and 1 minutes, so this resource can safely attach the storm/siren to the 2-minute event.
 
 If you deliberately set `Config.RestartUseQuitCommand = true`, the manual sequence runs FiveM's `quit` command after two minutes. Only enable that if your Linux service/process manager is configured to automatically relaunch FXServer after a clean exit.
+
+## v15 Siren loop fix
+The restart-warning siren now repeats approximately every 10 seconds for the
+entire two-minute countdown instead of stopping after its first playback.
+The active sound is cleaned up when the restart countdown ends.

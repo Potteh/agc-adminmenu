@@ -340,21 +340,39 @@ RegisterNetEvent('fadm:restartWarningStart', function(seconds)
         message = 'SEVERE THUNDERSTORM - SERVER RESTART'
     })
 
-    -- Play a frontend siren/alarm sound locally for every player.
+    -- Keep repeating the warning siren for the entire restart countdown.
+    -- The frontend sound itself is not reliably looped by GTA, so restart it
+    -- periodically until the countdown expires.
     if restartSirenId then
         StopSound(restartSirenId)
         ReleaseSoundId(restartSirenId)
+        restartSirenId = nil
     end
 
-    restartSirenId = GetSoundId()
-    PlaySoundFrontend(restartSirenId,
-        Config.RestartSirenSoundName or 'Air_Defences_Activated',
-        Config.RestartSirenSoundSet or 'DLC_sum20_Business_Battle_AC_Sounds',
-        true
-    )
-
     CreateThread(function()
-        Wait(12000)
+        local finish = GetGameTimer() + (seconds * 1000)
+
+        while GetGameTimer() < finish do
+            if restartSirenId then
+                StopSound(restartSirenId)
+                ReleaseSoundId(restartSirenId)
+            end
+
+            restartSirenId = GetSoundId()
+            PlaySoundFrontend(
+                restartSirenId,
+                Config.RestartSirenSoundName or 'Air_Defences_Activated',
+                Config.RestartSirenSoundSet or 'DLC_sum20_Business_Battle_AC_Sounds',
+                true
+            )
+
+            -- Replay before/around the point where this GTA sound normally ends.
+            local replayAt = GetGameTimer() + 10000
+            while GetGameTimer() < replayAt and GetGameTimer() < finish do
+                Wait(250)
+            end
+        end
+
         if restartSirenId then
             StopSound(restartSirenId)
             ReleaseSoundId(restartSirenId)
@@ -368,6 +386,11 @@ RegisterNetEvent('fadm:restartCountdown', function(seconds)
 end)
 
 RegisterNetEvent('fadm:restartNow', function()
+    if restartSirenId then
+        StopSound(restartSirenId)
+        ReleaseSoundId(restartSirenId)
+        restartSirenId = nil
+    end
     SendNUIMessage({ action = 'restartNow' })
 end)
 
