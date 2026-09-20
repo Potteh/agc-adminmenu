@@ -156,3 +156,11 @@ The admin-selected weather/time is now maintained as authoritative state by this
 resource and rebroadcast to every connected player every 2 seconds. Each client
 reapplies it locally, and newly joining players receive the current state. The
 qb-weathersync exports are still updated as well.
+
+## v17 Player teleport controls
+Each player card now includes:
+- **Go To** — teleports the admin to the selected player's current location.
+- **Bring** — teleports the selected player to the admin's current location.
+
+Teleport requests are authorized server-side with the existing admin ACE check.
+If the teleported player is the driver of a vehicle, their vehicle moves with them.

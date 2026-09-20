@@ -428,3 +428,52 @@ CreateThread(function()
         end
     end
 end)
+
+
+RegisterNetEvent('fadm:requestTeleportCoords', function(destinationPlayer, mode)
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    local heading = GetEntityHeading(ped)
+
+    TriggerServerEvent('fadm:returnTeleportCoords', destinationPlayer, mode, {
+        x = coords.x,
+        y = coords.y,
+        z = coords.z
+    }, heading)
+end)
+
+RegisterNetEvent('fadm:performTeleport', function(coords, heading)
+    if type(coords) ~= 'table' then return end
+
+    local ped = PlayerPedId()
+    local entity = ped
+
+    -- If the player is driving, move their vehicle with them. Passengers are
+    -- teleported individually so we do not unexpectedly move someone else's vehicle.
+    if IsPedInAnyVehicle(ped, false) then
+        local vehicle = GetVehiclePedIsIn(ped, false)
+        if GetPedInVehicleSeat(vehicle, -1) == ped then
+            entity = vehicle
+        end
+    end
+
+    DoScreenFadeOut(250)
+    while not IsScreenFadedOut() do Wait(0) end
+
+    RequestCollisionAtCoord(tonumber(coords.x) or 0.0, tonumber(coords.y) or 0.0, tonumber(coords.z) or 0.0)
+    SetEntityCoordsNoOffset(entity,
+        tonumber(coords.x) or 0.0,
+        tonumber(coords.y) or 0.0,
+        (tonumber(coords.z) or 0.0) + 0.25,
+        false, false, false
+    )
+    SetEntityHeading(entity, tonumber(heading) or 0.0)
+
+    Wait(300)
+    DoScreenFadeIn(250)
+end)
+
+RegisterNUICallback('teleportAction', function(data, cb)
+    TriggerServerEvent('fadm:teleportAction', data.action, tonumber(data.target))
+    cb({ok=true})
+end)

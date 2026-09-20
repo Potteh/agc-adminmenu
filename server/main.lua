@@ -478,3 +478,41 @@ AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
 
     TriggerClientEvent('fadm:restartWarningStart', -1, 120)
 end)
+
+
+RegisterNetEvent('fadm:teleportAction', function(action, target)
+    local src = source
+    if not isAdmin(src) then return end
+
+    target = tonumber(target)
+    if not target or not GetPlayerName(target) then
+        notify(src, 'Player is no longer online.')
+        return
+    end
+
+    if action == 'goto' then
+        -- Ask target for their coordinates, then return them to the requesting admin.
+        TriggerClientEvent('fadm:requestTeleportCoords', target, src, 'goto')
+    elseif action == 'bring' then
+        -- Ask the admin for their coordinates, then move the selected target there.
+        TriggerClientEvent('fadm:requestTeleportCoords', src, target, 'bring')
+    end
+end)
+
+RegisterNetEvent('fadm:returnTeleportCoords', function(destinationPlayer, mode, coords, heading)
+    local src = source
+    destinationPlayer = tonumber(destinationPlayer)
+    if not destinationPlayer or type(coords) ~= 'table' then return end
+
+    -- goto: coordinate sender is the target; destination is the admin.
+    -- bring: coordinate sender is the admin; destination is the target.
+    if mode == 'goto' then
+        if not isAdmin(destinationPlayer) then return end
+    elseif mode == 'bring' then
+        if not isAdmin(src) then return end
+    else
+        return
+    end
+
+    TriggerClientEvent('fadm:performTeleport', destinationPlayer, coords, heading)
+end)
