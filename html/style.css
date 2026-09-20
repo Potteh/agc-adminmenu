@@ -8,3 +8,5 @@
 #giveItemModal .modal-card { position: relative; z-index: 51; }
 
 .identity-line{font-size:12px;color:#aeb8c6;margin-top:4px}.identity-line span{font-size:9px;text-transform:uppercase;color:#6f7c8c;margin-right:5px}
+
+#jobModal{z-index:50}#jobModal .modal-card{position:relative;z-index:51}

@@ -558,3 +558,8 @@ RegisterNetEvent('fadm:restoreClothes', function()
     end
     fadmSavedClothes = nil
 end)
+
+RegisterNUICallback('setPlayerJob', function(data, cb)
+    TriggerServerEvent('fadm:setPlayerJob', tonumber(data.target), tostring(data.job or ''), tonumber(data.grade) or 0)
+    cb({ok=true})
+end)

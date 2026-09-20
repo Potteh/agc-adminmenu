@@ -13,7 +13,7 @@ function render(){
  const players=state.players.filter(p=>String(p.id).includes(q)||String(p.rockstarName||p.name||'').toLowerCase().includes(q)||String(p.characterName||'').toLowerCase().includes(q));
  $('#playerCount').textContent=state.players.length; $('#dashPlayers').textContent=state.players.length;
  $('#playersList').innerHTML=players.length?players.map(p=>`<article class="player-card"><div class="player-main"><div class="avatar">${esc(initials(p.name))}</div><div class="player-info"><b>${esc(p.characterName||'Character not loaded')}</b><div class="identity-line"><span>FiveM / Rockstar:</span> ${esc(p.rockstarName||p.name||'Unknown')}</div><div class="muted">Server ID #${p.id}</div></div></div><div class="actions">
- <button type="button" class="primary" data-teleport="goto" data-id="${p.id}">Go To</button><button type="button" class="primary" data-teleport="bring" data-id="${p.id}">Bring</button><button type="button" data-give-item data-id="${p.id}" data-name="${esc(p.name)}">Give Item</button><button type="button" data-transfer-vehicle data-id="${p.id}" data-name="${esc(p.name)}">Transfer Vehicle</button><button data-act="spectate" data-id="${p.id}">Spectate</button><button data-act="freeze" data-id="${p.id}">Freeze</button><button data-act="unfreeze" data-id="${p.id}">Unfreeze</button><button data-act="revive" data-id="${p.id}">Revive</button><button data-act="heal" data-id="${p.id}">Heal</button>
+ <button type="button" class="primary" data-teleport="goto" data-id="${p.id}">Go To</button><button type="button" class="primary" data-teleport="bring" data-id="${p.id}">Bring</button><button type="button" data-give-item data-id="${p.id}" data-name="${esc(p.name)}">Give Item</button><button type="button" data-set-job data-id="${p.id}" data-name="${esc(p.characterName||p.name)}">Set Job</button><button type="button" data-transfer-vehicle data-id="${p.id}" data-name="${esc(p.name)}">Transfer Vehicle</button><button data-act="spectate" data-id="${p.id}">Spectate</button><button data-act="freeze" data-id="${p.id}">Freeze</button><button data-act="unfreeze" data-id="${p.id}">Unfreeze</button><button data-act="revive" data-id="${p.id}">Revive</button><button data-act="heal" data-id="${p.id}">Heal</button>
  <button data-act="stripclothes" data-id="${p.id}">Remove Clothes</button><button data-act="restoreclothes" data-id="${p.id}">Restore Clothes</button> <button data-act="dogs" data-id="${p.id}">Wild Dogs</button><button class="soft-danger" data-act="fire" data-id="${p.id}">Set Fire</button><button class="soft-danger" data-act="explodevehicle" data-id="${p.id}">Explode Vehicle</button><button class="soft-danger" data-act="kill" data-id="${p.id}">Kill</button><button class="soft-danger" data-act="ban" data-id="${p.id}" data-name="${esc(p.name)}">Ban</button>
  </div></article>`).join(''):'<div class="player-card muted">No players match your search.</div>';
  renderReports();
@@ -169,4 +169,17 @@ document.addEventListener('click', (e) => {
     `Transfer the vehicle you are currently sitting in to ${pending.name}? Ownership will move to that player.`;
   document.querySelector('#reasonWrap').classList.add('hidden');
   document.querySelector('#confirm').classList.remove('hidden');
+});
+
+let jobTarget=null;
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('button[data-set-job]');
+ if(b){e.preventDefault();jobTarget=Number(b.dataset.id);$('#jobPlayer').textContent=`${b.dataset.name||'Player'} (#${jobTarget})`;$('#jobName').value='';$('#jobGrade').value='0';$('#jobModal').classList.remove('hidden');return}
+ if(e.target.closest('#jobCancel')){$('#jobModal').classList.add('hidden');jobTarget=null;return}
+ if(e.target.closest('#jobSubmit')){
+   const job=$('#jobName').value.trim().toLowerCase(),grade=Math.max(0,Math.floor(Number($('#jobGrade').value)||0));
+   if(!jobTarget||!job){toast('Enter a valid QBCore job name.');return}
+   await post('setPlayerJob',{target:jobTarget,job,grade});
+   $('#jobModal').classList.add('hidden');toast(`Job request sent: ${job} grade ${grade}`);jobTarget=null;
+ }
 });

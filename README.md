@@ -216,3 +216,6 @@ back for that session. No custom nude model or explicit texture is included.
 ## v25 Player identities
 Player cards now display QBCore character first/last name, FiveM/Rockstar display
 name, and server ID. Search matches all three.
+
+## v26 Set Job
+Player cards include Set Job. Jobs and grades are validated against QBCore.Shared.Jobs and applied with Player.Functions.SetJob.

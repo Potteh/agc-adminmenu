@@ -94,6 +94,12 @@
     </section>
   </div>
 
+  <div id="jobModal" class="modal hidden"><div class="modal-card">
+    <h2>Set Player Job</h2><p id="jobPlayer" class="muted"></p>
+    <label>QBCore Job Name</label><input id="jobName" type="text" placeholder="police, ambulance, mechanic" autocomplete="off">
+    <label>Job Grade</label><input id="jobGrade" type="number" min="0" value="0">
+    <div class="modal-actions"><button type="button" id="jobCancel">Cancel</button><button type="button" id="jobSubmit" class="primary">Set Job</button></div>
+  </div></div>
   <div id="confirm" class="modal hidden">
     <div class="modal-card">
       <div class="danger-icon">!</div><h2 id="confirmTitle">Confirm action</h2>
