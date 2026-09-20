@@ -398,3 +398,33 @@ RegisterNUICallback('startRestartSequence', function(_, cb)
     TriggerServerEvent('fadm:startRestartSequence')
     cb({ok=true})
 end)
+
+local fadmWorldState = nil
+
+RegisterNetEvent('fadm:syncAdminWorldState', function(state)
+    if type(state) == 'table' then fadmWorldState = state end
+end)
+
+CreateThread(function()
+    while true do
+        if fadmWorldState and fadmWorldState.active then
+            if fadmWorldState.weather then
+                local w = tostring(fadmWorldState.weather)
+                ClearOverrideWeather()
+                ClearWeatherTypePersist()
+                SetWeatherTypePersist(w)
+                SetWeatherTypeNow(w)
+                SetWeatherTypeNowPersist(w)
+                if w == 'RAIN' then SetRainLevel(0.3)
+                elseif w == 'THUNDER' then SetRainLevel(0.5)
+                else SetRainLevel(0.0) end
+            end
+            if fadmWorldState.hour ~= nil then
+                NetworkOverrideClockTime(tonumber(fadmWorldState.hour) or 12, tonumber(fadmWorldState.minute) or 0, 0)
+            end
+            Wait(250)
+        else
+            Wait(1000)
+        end
+    end
+end)

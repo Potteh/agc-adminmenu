@@ -323,6 +323,31 @@ RegisterCommand('admin', function(src)
     TriggerClientEvent('fadm:open', src)
 end, false)
 
+
+local adminWorldState = { weather=nil, hour=nil, minute=0, active=false }
+
+local function broadcastAdminWorldState()
+    if adminWorldState.active then
+        TriggerClientEvent('fadm:syncAdminWorldState', -1, adminWorldState)
+    end
+end
+
+CreateThread(function()
+    while true do
+        Wait(tonumber(Config.AdminWorldSyncIntervalMs) or 2000)
+        broadcastAdminWorldState()
+    end
+end)
+
+AddEventHandler('playerJoining', function()
+    local src = source
+    SetTimeout(5000, function()
+        if adminWorldState.active then
+            TriggerClientEvent('fadm:syncAdminWorldState', src, adminWorldState)
+        end
+    end)
+end)
+
 RegisterNetEvent('fadm:worldAction', function(action, value)
     local src = source
     if not isAdmin(src) then return end
@@ -338,7 +363,11 @@ RegisterNetEvent('fadm:worldAction', function(action, value)
 
         local success = exports['qb-weathersync']:setTime(hour, 0)
         if success then
+            adminWorldState.hour = hour
+            adminWorldState.minute = 0
+            adminWorldState.active = true
             TriggerEvent('qb-weathersync:server:RequestStateSync')
+            broadcastAdminWorldState()
             notify(src, hour == 0 and 'Server changed to night.' or 'Server changed to day.')
         else
             notify(src, 'Unable to change server time.')
@@ -359,7 +388,10 @@ RegisterNetEvent('fadm:worldAction', function(action, value)
 
         local success = exports['qb-weathersync']:setWeather(weather)
         if success then
+            adminWorldState.weather = weather
+            adminWorldState.active = true
             TriggerEvent('qb-weathersync:server:RequestStateSync')
+            broadcastAdminWorldState()
             notify(src, ('Weather changed to %s.'):format(weather))
         else
             notify(src, ('qb-weathersync rejected weather type %s.'):format(weather))
@@ -404,7 +436,10 @@ RegisterNetEvent('fadm:startRestartSequence', function()
         if GetResourceState('qb-weathersync') == 'started' then
             exports['qb-weathersync']:setDynamicWeather(false)
             exports['qb-weathersync']:setWeather(storm)
+            adminWorldState.weather = storm
+            adminWorldState.active = true
             TriggerEvent('qb-weathersync:server:RequestStateSync')
+            broadcastAdminWorldState()
         end
 
         TriggerClientEvent('fadm:restartWarningStart', -1, seconds)

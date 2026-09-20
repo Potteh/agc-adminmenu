@@ -150,3 +150,9 @@ If you deliberately set `Config.RestartUseQuitCommand = true`, the manual sequen
 The restart-warning siren now repeats approximately every 10 seconds for the
 entire two-minute countdown instead of stopping after its first playback.
 The active sound is cleaned up when the restart countdown ends.
+
+## v16 multiplayer weather/time fix
+The admin-selected weather/time is now maintained as authoritative state by this
+resource and rebroadcast to every connected player every 2 seconds. Each client
+reapplies it locally, and newly joining players receive the current state. The
+qb-weathersync exports are still updated as well.

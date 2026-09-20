@@ -24,3 +24,5 @@ Config.RestartSirenSoundSet = 'DLC_sum20_Business_Battle_AC_Sounds'
 -- If true, the sequence ends with the FXServer `quit` command. Use this only when your host/process
 -- manager is configured to automatically start FXServer again after a clean exit.
 Config.RestartUseQuitCommand = false
+
+Config.AdminWorldSyncIntervalMs = 2000
