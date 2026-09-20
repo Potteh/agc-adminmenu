@@ -27,8 +27,56 @@ local function getActiveRadios()
     return radios, true
 end
 
+local function getRadioOccupants(netId)
+    local occupants = {}
+    netId = tonumber(netId)
+    if not netId then return occupants end
+
+    local vehicle = NetworkGetEntityFromNetworkId(netId)
+    if not vehicle or vehicle == 0 or not DoesEntityExist(vehicle) then
+        return occupants
+    end
+
+    local QBCore = exports['qb-core']:GetCoreObject()
+    local driverPed = GetPedInVehicleSeat(vehicle, -1)
+
+    for _, id in ipairs(GetPlayers()) do
+        local src = tonumber(id)
+        local ped = src and GetPlayerPed(src) or 0
+        if ped and ped ~= 0 and DoesEntityExist(ped) and GetVehiclePedIsIn(ped, false) == vehicle then
+            local platformName = GetPlayerName(src) or ('Player ' .. tostring(src))
+            local characterName = 'Character not loaded'
+            local Player = QBCore.Functions.GetPlayer(src)
+            if Player and Player.PlayerData and Player.PlayerData.charinfo then
+                local ci = Player.PlayerData.charinfo
+                local full = (tostring(ci.firstname or '') .. ' ' .. tostring(ci.lastname or ''))
+                    :gsub('^%s+', ''):gsub('%s+$', '')
+                if full ~= '' then characterName = full end
+            end
+
+            occupants[#occupants + 1] = {
+                id = src,
+                characterName = characterName,
+                rockstarName = platformName,
+                role = ped == driverPed and 'Driver' or 'Passenger'
+            }
+        end
+    end
+
+    table.sort(occupants, function(a, b)
+        if a.role ~= b.role then return a.role == 'Driver' end
+        return a.id < b.id
+    end)
+    return occupants
+end
+
 local function radioPayload()
     local radios, available = getActiveRadios()
+    if available then
+        for _, radio in ipairs(radios) do
+            radio.occupants = getRadioOccupants(radio.netId)
+        end
+    end
     return { available = available, radios = radios }
 end
 
