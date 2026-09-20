@@ -478,3 +478,9 @@ RegisterNUICallback('teleportAction', function(data, cb)
     end
     cb({ ok = true })
 end)
+
+
+RegisterNUICallback('giveItem', function(data, cb)
+    TriggerServerEvent('fadm:giveItem', tonumber(data.target), tostring(data.item or ''), tonumber(data.amount) or 1)
+    cb({ ok = true })
+end)

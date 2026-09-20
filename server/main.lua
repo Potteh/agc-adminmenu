@@ -480,6 +480,51 @@ AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
 end)
 
 
+
+
+-- v19: Give Item
+RegisterNetEvent('fadm:giveItem', function(target, itemName, amount)
+    local src = source
+    if not isAdmin(src) then return end
+
+    target = tonumber(target)
+    amount = math.floor(tonumber(amount) or 0)
+    itemName = tostring(itemName or ''):lower():gsub('%s+', '')
+
+    if not target or not GetPlayerName(target) then
+        notify(src, 'Player is no longer online.')
+        return
+    end
+    if itemName == '' or amount < 1 or amount > 1000 then
+        notify(src, 'Invalid item or amount (1-1000).')
+        return
+    end
+
+    local QBCore = exports['qb-core']:GetCoreObject()
+    local Player = QBCore.Functions.GetPlayer(target)
+    if not Player then
+        notify(src, 'Could not find QBCore player.')
+        return
+    end
+
+    local item = QBCore.Shared.Items[itemName]
+    if not item then
+        notify(src, ('Unknown item: %s'):format(itemName))
+        return
+    end
+
+    local success = Player.Functions.AddItem(itemName, amount)
+    if success == false then
+        notify(src, 'Could not give item. Inventory may be full.')
+        return
+    end
+
+    -- Standard qb-inventory item box notification when available.
+    TriggerClientEvent('inventory:client:ItemBox', target, item, 'add', amount)
+    notify(src, ('Gave %sx %s to %s.'):format(amount, item.label or itemName, GetPlayerName(target)))
+    notify(target, ('You received %sx %s from an administrator.'):format(amount, item.label or itemName))
+end)
+
 -- v18: reliable admin teleport routing.
 RegisterNetEvent('fadm:teleportAction', function(action, target)
     local src = source

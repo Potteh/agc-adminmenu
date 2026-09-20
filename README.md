@@ -171,3 +171,9 @@ The NUI buttons now have a dedicated delegated click handler and explicit
 `type="button"`, preventing other player-card click handling from swallowing the
 teleport action. Coordinates are sent as individual numeric event arguments
 instead of a Lua table, improving FiveM event compatibility.
+
+## v19 Give Item
+Player cards now include **Give Item**. Enter a QBCore item spawn name and amount.
+The server validates the admin ACE permission, target, amount, and the item against
+`QBCore.Shared.Items` before calling the player's `AddItem` function. Maximum amount
+per action is 1000. Standard qb-inventory ItemBox notification is triggered.

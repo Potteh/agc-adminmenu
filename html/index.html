@@ -106,5 +106,21 @@
 <div id="restartBanner" class="restart-banner hidden"><div class="warning-pulse">⚠</div><div><strong>SEVERE THUNDERSTORM — SERVER RESTART</strong><span id="restartBannerText">Server restart in 2:00</span></div></div>
 <div id="toastStack"></div>
 <script src="app.js"></script>
+
+<div id="giveItemModal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Give Item</h3>
+    <p id="giveItemPlayer" class="muted"></p>
+    <label>Item spawn name</label>
+    <input id="giveItemName" type="text" placeholder="e.g. water_bottle" autocomplete="off">
+    <label>Amount</label>
+    <input id="giveItemAmount" type="number" min="1" max="1000" value="1">
+    <div class="modal-actions">
+      <button type="button" id="giveItemCancel" class="ghost">Cancel</button>
+      <button type="button" id="giveItemSubmit" class="primary">Give Item</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
