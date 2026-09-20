@@ -29,7 +29,7 @@ function renderRadios(){
  const summary=$('#radioSummary');
  if(summary) summary.innerHTML=`<div class="radio-stat"><span>ACTIVE RADIOS</span><strong>${radios.length}</strong></div><div class="radio-stat"><span>INTEGRATION</span><strong class="${integration.available?'good':''}">${integration.available?'CONNECTED':'STANDALONE / OFFLINE'}</strong></div>`;
  const list=$('#radioList'); if(!list)return;
- if(!integration.available){list.innerHTML='<div class="radio-card muted">acg_radio is not running or the optional integration is disabled. The admin menu continues to work normally.</div>';return}
+ if(!integration.available){list.innerHTML='<div class="radio-card muted">agc-carradio is not running or the optional integration is disabled. The admin menu continues to work normally.</div>';return}
  if(!radios.length){list.innerHTML='<div class="radio-card muted">No vehicle radios are currently active.</div>';return}
  list.innerHTML=radios.map(r=>{
    const net=Number(r.netId)||0, source=String(r.source||'unknown');
@@ -256,5 +256,5 @@ $('#godModeBtn').onclick=async()=>{
 const radioNav=document.querySelector('[data-tab="radio"]');
 if(radioNav) radioNav.addEventListener('click',()=>post('radioRefresh'));
 const radioRefresh=$('#radioRefresh'); if(radioRefresh) radioRefresh.onclick=()=>post('radioRefresh');
-const radioStopAll=$('#radioStopAll'); if(radioStopAll) radioStopAll.onclick=()=>{pending={radioStopAll:true};$('#confirmTitle').textContent='Stop all vehicle radios?';$('#confirmText').textContent='This will stop every active acg_radio vehicle radio on the server.';$('#reasonWrap').classList.add('hidden');$('#confirm').classList.remove('hidden')};
+const radioStopAll=$('#radioStopAll'); if(radioStopAll) radioStopAll.onclick=()=>{pending={radioStopAll:true};$('#confirmTitle').textContent='Stop all vehicle radios?';$('#confirmText').textContent='This will stop every active agc-carradio vehicle radio on the server.';$('#reasonWrap').classList.add('hidden');$('#confirm').classList.remove('hidden')};
 document.addEventListener('click',e=>{const stop=e.target.closest('[data-radio-stop]');if(stop){const netId=Number(stop.dataset.radioStop);pending={radioStop:true,netId};$('#confirmTitle').textContent='Stop vehicle radio?';$('#confirmText').textContent=`Stop the active radio on vehicle network ID #${netId}?`;$('#reasonWrap').classList.add('hidden');$('#confirm').classList.remove('hidden');return}const tp=e.target.closest('[data-radio-teleport]');if(tp){post('radioTeleport',{netId:Number(tp.dataset.radioTeleport)});toast('Teleport request sent.')}});

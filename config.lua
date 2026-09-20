@@ -31,5 +31,5 @@ Config.AdminWorldSyncIntervalMs = 2000
 -- Optional ACG Radio integration. acg_radio is NOT a dependency.
 Config.AcgRadio = {
     Enabled = true,
-    ResourceName = 'acg_radio'
+    ResourceName = 'agc-carradio'
 }
