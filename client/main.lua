@@ -576,3 +576,24 @@ RegisterNUICallback('getCoords', function(_, cb)
         heading = heading
     })
 end)
+
+
+RegisterNetEvent('fadm:requestWaypointCoords', function(adminSrc)
+    local coords = GetEntityCoords(PlayerPedId())
+    TriggerServerEvent('fadm:waypointCoordsResponse', tonumber(adminSrc), coords.x, coords.y, coords.z)
+end)
+
+RegisterNetEvent('fadm:setWaypointCoords', function(x, y, z, playerName)
+    x, y, z = tonumber(x), tonumber(y), tonumber(z)
+    if not x or not y or not z then return end
+    SetNewWaypoint(x + 0.0, y + 0.0)
+    TriggerEvent('fadm:notify', ('Waypoint set to %s.'):format(tostring(playerName or 'player')))
+end)
+
+RegisterNUICallback('waypointPlayer', function(data, cb)
+    local target = tonumber(data.target)
+    if target then
+        TriggerServerEvent('fadm:waypointToPlayer', target)
+    end
+    cb({ok = target ~= nil})
+end)

@@ -13,7 +13,7 @@ function render(){
  const players=state.players.filter(p=>String(p.id).includes(q)||String(p.rockstarName||p.name||'').toLowerCase().includes(q)||String(p.characterName||'').toLowerCase().includes(q));
  $('#playerCount').textContent=state.players.length; $('#dashPlayers').textContent=state.players.length;
  $('#playersList').innerHTML=players.length?players.map(p=>`<article class="player-card"><div class="player-main"><div class="avatar">${esc(initials(p.name))}</div><div class="player-info"><b>${esc(p.characterName||'Character not loaded')}</b><div class="identity-line"><span>FiveM / Rockstar:</span> ${esc(p.rockstarName||p.name||'Unknown')}</div><div class="muted">Server ID #${p.id}</div></div></div><div class="actions">
- <button type="button" class="primary" data-teleport="goto" data-id="${p.id}">Go To</button><button type="button" class="primary" data-teleport="bring" data-id="${p.id}">Bring</button><button type="button" data-give-item data-id="${p.id}" data-name="${esc(p.name)}">Give Item</button><button type="button" data-set-job data-id="${p.id}" data-name="${esc(p.characterName||p.name)}">Set Job</button><button type="button" data-transfer-vehicle data-id="${p.id}" data-name="${esc(p.name)}">Transfer Vehicle</button><button data-act="spectate" data-id="${p.id}">Spectate</button><button data-act="freeze" data-id="${p.id}">Freeze</button><button data-act="unfreeze" data-id="${p.id}">Unfreeze</button><button data-act="revive" data-id="${p.id}">Revive</button><button data-act="heal" data-id="${p.id}">Heal</button>
+ <button type="button" class="primary" data-teleport="goto" data-id="${p.id}">Go To</button><button type="button" data-waypoint-player data-id="${p.id}">Set Waypoint</button><button type="button" class="primary" data-teleport="bring" data-id="${p.id}">Bring</button><button type="button" data-give-item data-id="${p.id}" data-name="${esc(p.name)}">Give Item</button><button type="button" data-set-job data-id="${p.id}" data-name="${esc(p.characterName||p.name)}">Set Job</button><button type="button" data-transfer-vehicle data-id="${p.id}" data-name="${esc(p.name)}">Transfer Vehicle</button><button data-act="spectate" data-id="${p.id}">Spectate</button><button data-act="freeze" data-id="${p.id}">Freeze</button><button data-act="unfreeze" data-id="${p.id}">Unfreeze</button><button data-act="revive" data-id="${p.id}">Revive</button><button data-act="heal" data-id="${p.id}">Heal</button>
  <button data-act="stripclothes" data-id="${p.id}">Remove Clothes</button><button data-act="restoreclothes" data-id="${p.id}">Restore Clothes</button> <button data-act="dogs" data-id="${p.id}">Wild Dogs</button><button class="soft-danger" data-act="fire" data-id="${p.id}">Set Fire</button><button class="soft-danger" data-act="explodevehicle" data-id="${p.id}">Explode Vehicle</button><button class="soft-danger" data-act="kill" data-id="${p.id}">Kill</button><button class="soft-danger" data-act="ban" data-id="${p.id}" data-name="${esc(p.name)}">Ban</button>
  </div></article>`).join(''):'<div class="player-card muted">No players match your search.</div>';
  renderReports();
@@ -200,3 +200,17 @@ $('#getCoords').onclick=refreshDeveloperCoords;
 $('#copyVector3').onclick=async()=>{try{await navigator.clipboard.writeText($('#coordVector3').value);toast('Vector3 copied.')}catch(e){toast('Copy unavailable; select the text manually.')}};
 $('#copyVector4').onclick=async()=>{try{await navigator.clipboard.writeText($('#coordVector4').value);toast('Vector4 copied.')}catch(e){toast('Copy unavailable; select the text manually.')}};
 document.querySelector('[data-tab="developer"]').addEventListener('click',()=>setTimeout(refreshDeveloperCoords,0));
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-waypoint-player]');
+  if (!btn) return;
+  e.preventDefault();
+  const target = Number(btn.dataset.id);
+  if (!target) return;
+  try {
+    await post('waypointPlayer', {target});
+    toast(`Waypoint requested for player #${target}.`);
+  } catch (err) {
+    toast('Could not set player waypoint.');
+  }
+});

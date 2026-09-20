@@ -230,3 +230,8 @@ helpers are defined and explicitly refreshes QBCore player/job data on the targe
 Added a Developer sidebar page with live player coordinate lookup. It displays X,
 Y, Z, heading, a ready-to-use `vector3(x, y, z)`, and `vector4(x, y, z, heading)`.
 The page includes refresh and copy buttons.
+
+## v29 Player waypoint
+Each player card now has **Set Waypoint**. The target client returns its current
+coordinates to the server, which relays them only to the requesting authorized
+admin. The admin client then uses `SetNewWaypoint(x, y)` to place the GPS waypoint.

@@ -64,6 +64,32 @@ local function setPlayerJob(src, target, jobName, grade)
         job.label or jobName, gd.name or tostring(grade), grade))
 end
 
+
+-- v29: set an admin's map waypoint to an online player's current position.
+RegisterNetEvent('fadm:waypointToPlayer', function(target)
+    local src = source
+    if not isAdmin(src) then return end
+
+    target = tonumber(target)
+    if not target or not GetPlayerName(target) then
+        notify(src, 'Target player is no longer online.')
+        return
+    end
+
+    TriggerClientEvent('fadm:requestWaypointCoords', target, src)
+end)
+
+RegisterNetEvent('fadm:waypointCoordsResponse', function(adminSrc, x, y, z)
+    local targetSrc = source
+    adminSrc = tonumber(adminSrc)
+    x, y, z = tonumber(x), tonumber(y), tonumber(z)
+
+    if not adminSrc or not GetPlayerName(adminSrc) or not isAdmin(adminSrc) then return end
+    if not x or not y or not z then return end
+
+    TriggerClientEvent('fadm:setWaypointCoords', adminSrc, x, y, z, GetPlayerName(targetSrc) or ('Player '..targetSrc))
+end)
+
 RegisterNetEvent('fadm:setPlayerJob', function(target, jobName, grade)
     setPlayerJob(source, target, jobName, grade)
 end)
