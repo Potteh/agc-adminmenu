@@ -168,6 +168,14 @@ RegisterNetEvent('fadm:action', function(action, target, reason)
         end
         TriggerClientEvent('fadm:spawnVehicle', src, modelName)
 
+    elseif action == 'stripclothes' then
+        TriggerClientEvent('fadm:stripClothes', target)
+        notify(src, ('Removed shirt, pants, and shoes from %s.'):format(GetPlayerName(target)))
+
+    elseif action == 'restoreclothes' then
+        TriggerClientEvent('fadm:restoreClothes', target)
+        notify(src, ('Restored clothing for %s.'):format(GetPlayerName(target)))
+
     elseif action == 'spectate' then
         TriggerClientEvent('fadm:spectate', src, target)
     else

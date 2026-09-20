@@ -205,3 +205,10 @@ and `license` to the selected online player. The recipient receives qb-vehicleke
 ownership and can store the vehicle through qb-garages.
 
 This transfers ownership rather than duplicating the database row.
+
+## v24 Remove / Restore Clothes
+Player cards now include **Remove Clothes** and **Restore Clothes**. Remove Clothes
+changes the target's standard GTA freemode clothing components for top/undershirt,
+pants and shoes to minimal/default freemode variants. The affected component
+variations are saved client-side and Restore Clothes puts the previous variations
+back for that session. No custom nude model or explicit texture is included.

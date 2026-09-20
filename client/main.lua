@@ -523,3 +523,38 @@ end)
 RegisterNetEvent('fadm:receiveTransferredVehicleKeys', function(plate)
     TriggerEvent('vehiclekeys:client:SetOwner', tostring(plate or ''))
 end)
+
+
+local fadmSavedClothes = nil
+
+RegisterNetEvent('fadm:stripClothes', function()
+    local ped = PlayerPedId()
+
+    -- Save the affected components once so Restore Clothes can put them back.
+    fadmSavedClothes = {
+        [3]  = { GetPedDrawableVariation(ped, 3),  GetPedTextureVariation(ped, 3),  GetPedPaletteVariation(ped, 3)  },
+        [4]  = { GetPedDrawableVariation(ped, 4),  GetPedTextureVariation(ped, 4),  GetPedPaletteVariation(ped, 4)  },
+        [6]  = { GetPedDrawableVariation(ped, 6),  GetPedTextureVariation(ped, 6),  GetPedPaletteVariation(ped, 6)  },
+        [8]  = { GetPedDrawableVariation(ped, 8),  GetPedTextureVariation(ped, 8),  GetPedPaletteVariation(ped, 8)  },
+        [11] = { GetPedDrawableVariation(ped, 11), GetPedTextureVariation(ped, 11), GetPedPaletteVariation(ped, 11) }
+    }
+
+    -- Freemode component slots:
+    -- 3 arms/torso, 4 legs, 6 shoes, 8 undershirt, 11 tops.
+    -- These are GTA clothing-component changes only; no custom nude model is used.
+    SetPedComponentVariation(ped, 11, 15, 0, 0) -- top
+    SetPedComponentVariation(ped, 8, 15, 0, 0)  -- undershirt
+    SetPedComponentVariation(ped, 3, 15, 0, 0)  -- torso/arms
+    SetPedComponentVariation(ped, 4, 14, 0, 0)  -- pants/underwear-style freemode component
+    SetPedComponentVariation(ped, 6, 34, 0, 0)  -- barefoot-style freemode component
+end)
+
+RegisterNetEvent('fadm:restoreClothes', function()
+    local ped = PlayerPedId()
+    if not fadmSavedClothes then return end
+
+    for component, data in pairs(fadmSavedClothes) do
+        SetPedComponentVariation(ped, component, data[1], data[2], data[3])
+    end
+    fadmSavedClothes = nil
+end)
