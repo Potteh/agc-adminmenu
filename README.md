@@ -243,3 +243,8 @@ admin. The admin client then uses `SetNewWaypoint(x, y)` to place the GPS waypoi
 - Developer Tools includes **God Mode** for the admin's own character. It toggles
   entity/player invincibility and disables ragdoll while active. A maintenance
   loop reapplies the native flags once per second.
+
+## v31 Ragdoll UI fix
+Fixed the player-card renderer so the Ragdoll button is actually inserted before
+Wild Dogs. The v30 backend/client ragdoll handlers were present, but the UI button
+insertion did not survive the generated player-card markup.
