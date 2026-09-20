@@ -1,23 +1,5 @@
 
-RegisterNetEvent('fadm:setPlayerJob', function(target, jobName, grade)
-    local src = source
-    if not isAdmin(src) then return end
-    target = tonumber(target)
-    jobName = tostring(jobName or ''):lower():gsub('%s+', '')
-    grade = math.floor(tonumber(grade) or 0)
-    if not target or not GetPlayerName(target) then notify(src,'Target player is no longer online.') return end
-    local QBCore = exports['qb-core']:GetCoreObject()
-    local job = QBCore.Shared.Jobs[jobName]
-    if not job then notify(src,('Unknown QBCore job: %s'):format(jobName)) return end
-    local gd = job.grades and (job.grades[tostring(grade)] or job.grades[grade])
-    if not gd then notify(src,('Invalid grade %s for job %s.'):format(grade,jobName)) return end
-    local Player = QBCore.Functions.GetPlayer(target)
-    if not Player then notify(src,'Could not find QBCore player.') return end
-    local ok = Player.Functions.SetJob(jobName, grade)
-    if ok == false then notify(src,'QBCore rejected the job assignment.') return end
-    notify(src,('Set %s to %s - %s (grade %s).'):format(GetPlayerName(target),job.label or jobName,gd.name or grade,grade))
-    notify(target,('Your job was changed to %s - %s (grade %s) by an administrator.'):format(job.label or jobName,gd.name or grade,grade))
-end)
+
 
 local RESOURCE = GetCurrentResourceName()
 local bans = {}
@@ -31,6 +13,60 @@ end
 local function notify(src, msg)
     TriggerClientEvent('fadm:notify', src, msg)
 end
+
+local function setPlayerJob(src, target, jobName, grade)
+    if not isAdmin(src) then return end
+
+    target = tonumber(target)
+    jobName = tostring(jobName or ''):lower():gsub('^%s+', ''):gsub('%s+$', '')
+    grade = math.floor(tonumber(grade) or 0)
+
+    if not target or not GetPlayerName(target) then
+        notify(src, 'Target player is no longer online.')
+        return
+    end
+
+    local QBCore = exports['qb-core']:GetCoreObject()
+    local Player = QBCore.Functions.GetPlayer(target)
+    if not Player then
+        notify(src, 'Target QBCore character is not loaded.')
+        return
+    end
+
+    local job = QBCore.Shared.Jobs[jobName]
+    if not job then
+        notify(src, ('Unknown job "%s". Use the spawn name from qb-core/shared/jobs.lua.'):format(jobName))
+        return
+    end
+
+    local gd = job.grades and (job.grades[tostring(grade)] or job.grades[grade])
+    if not gd then
+        notify(src, ('Grade %s does not exist for %s.'):format(grade, job.label or jobName))
+        return
+    end
+
+    -- Current QBCore SetJob accepts the grade as a number and updates PlayerData
+    -- plus the persistent players.job JSON through UpdatePlayerData/Save.
+    local success = Player.Functions.SetJob(jobName, grade)
+    if not success then
+        notify(src, ('Failed to set %s to %s grade %s.'):format(GetPlayerName(target), jobName, grade))
+        return
+    end
+
+    -- Explicitly push the refreshed PlayerData to the target for HUD/job scripts
+    -- that rely on the standard QBCore client update event.
+    TriggerClientEvent('QBCore:Player:SetPlayerData', target, Player.PlayerData)
+    TriggerClientEvent('QBCore:Client:OnJobUpdate', target, Player.PlayerData.job)
+
+    notify(src, ('%s is now %s - %s (grade %s).'):format(
+        GetPlayerName(target), job.label or jobName, gd.name or tostring(grade), grade))
+    notify(target, ('Your job is now %s - %s (grade %s).'):format(
+        job.label or jobName, gd.name or tostring(grade), grade))
+end
+
+RegisterNetEvent('fadm:setPlayerJob', function(target, jobName, grade)
+    setPlayerJob(source, target, jobName, grade)
+end)
 
 local function loadBans()
     local raw = LoadResourceFile(RESOURCE, Config.BanFile)
