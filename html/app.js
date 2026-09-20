@@ -93,20 +93,55 @@ document.addEventListener('click', (e) => {
   setTimeout(() => document.querySelector('#giveItemName').focus(), 0);
 });
 
-document.querySelector('#giveItemCancel').addEventListener('click', () => {
-  document.querySelector('#giveItemModal').classList.add('hidden');
-  giveItemTarget = null;
-});
-
-document.querySelector('#giveItemSubmit').addEventListener('click', async () => {
-  const item = document.querySelector('#giveItemName').value.trim();
-  const amount = Math.max(1, Math.min(1000, Number(document.querySelector('#giveItemAmount').value) || 1));
-  if (!giveItemTarget || !item) {
-    toast('Enter a valid item spawn name.');
+document.addEventListener('click', async (e) => {
+  if (e.target.closest('#giveItemCancel')) {
+    const modal = document.querySelector('#giveItemModal');
+    if (modal) modal.classList.add('hidden');
+    giveItemTarget = null;
     return;
   }
-  await post('giveItem', { target: giveItemTarget, item, amount });
-  document.querySelector('#giveItemModal').classList.add('hidden');
-  toast(`Give item request sent: ${amount}x ${item}`);
-  giveItemTarget = null;
+
+  if (e.target.closest('#giveItemSubmit')) {
+    const nameInput = document.querySelector('#giveItemName');
+    const amountInput = document.querySelector('#giveItemAmount');
+    const modal = document.querySelector('#giveItemModal');
+
+    const item = nameInput ? nameInput.value.trim() : '';
+    const amount = Math.max(1, Math.min(1000, Number(amountInput ? amountInput.value : 1) || 1));
+
+    if (!giveItemTarget || !item) {
+      toast('Enter a valid item spawn name.');
+      return;
+    }
+
+    try {
+      await post('giveItem', { target: giveItemTarget, item, amount });
+      if (modal) modal.classList.add('hidden');
+      toast(`Give item request sent: ${amount}x ${item}`);
+      giveItemTarget = null;
+    } catch (err) {
+      toast('Give item request failed.');
+    }
+  }
+});
+
+// v21 Give Item modal safety: allow Escape to close it without closing/sticking NUI.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.querySelector('#giveItemModal');
+    if (modal && !modal.classList.contains('hidden')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      modal.classList.add('hidden');
+      giveItemTarget = null;
+    }
+  }
+}, true);
+
+document.addEventListener('click', (e) => {
+  const modal = document.querySelector('#giveItemModal');
+  if (modal && e.target === modal) {
+    modal.classList.add('hidden');
+    giveItemTarget = null;
+  }
 });

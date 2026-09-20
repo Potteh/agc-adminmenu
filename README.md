@@ -177,3 +177,15 @@ Player cards now include **Give Item**. Enter a QBCore item spawn name and amoun
 The server validates the admin ACE permission, target, amount, and the item against
 `QBCore.Shared.Items` before calling the player's `AddItem` function. Maximum amount
 per action is 1000. Standard qb-inventory ItemBox notification is triggered.
+
+## v20 NUI Give Item fix
+Fixed the `Cannot read properties of null (reading 'addEventListener')` NUI error.
+Give Item modal buttons now use delegated document event handling, so they work
+regardless of when the modal DOM is parsed by FiveM NUI.
+
+## v21 Give Item freeze fix
+The Give Item modal had been inserted *after* `#app` and after the app.js script.
+That made it an independent full-screen absolute NUI layer, which looked like the
+game had frozen and could leave focus trapped. The modal now lives inside `#app`,
+the script loads after the modal markup, and the modal can be dismissed with
+Cancel, Escape, or by clicking its backdrop.

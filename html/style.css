@@ -2,3 +2,7 @@
 .world-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.world-card{background:#121923;border:1px solid #28323e;border-radius:12px;padding:19px;min-height:230px;display:flex;flex-direction:column}.world-card h3{margin:8px 0 6px}.world-card p{color:#7e8998;font-size:12px;line-height:1.5;margin-bottom:18px}.world-card select{width:100%;margin-top:auto}.world-icon{font-size:28px}.world-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:13px}.earthquake-card{border-color:#563038}@media(max-width:1000px){.world-grid{grid-template-columns:1fr}}
 
 .restart-card{border-color:#6b4030}.restart-banner{position:fixed;left:50%;top:24px;transform:translateX(-50%);z-index:100;width:min(620px,88vw);background:#241a14;border:1px solid #9a603d;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 45px #0009}.restart-banner strong,.restart-banner span{display:block}.restart-banner strong{font-size:13px;letter-spacing:.5px}.restart-banner span{color:#d4b99e;font-size:12px;margin-top:3px}.warning-pulse{font-size:25px;animation:warnpulse 1s infinite}@keyframes warnpulse{50%{opacity:.35}}
+
+/* v21: Give Item modal is now inside #app and explicitly layered above the admin shell. */
+#giveItemModal { z-index: 50; }
+#giveItemModal .modal-card { position: relative; z-index: 51; }
