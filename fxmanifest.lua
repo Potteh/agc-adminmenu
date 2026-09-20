@@ -27,3 +27,5 @@ files {
 }
 
 dependency 'qb-weathersync'
+
+server_script '@oxmysql/lib/MySQL.lua'

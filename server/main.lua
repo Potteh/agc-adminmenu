@@ -192,6 +192,115 @@ RegisterNetEvent('fadm:spawnVehicleRequest', function(modelName)
     TriggerClientEvent('fadm:spawnVehicle', src, modelName)
 end)
 
+
+
+-- v23: transfer an owned vehicle to another online player.
+RegisterNetEvent('fadm:transferVehicle', function(target, plate)
+    local src = source
+    if not isAdmin(src) then return end
+
+    target = tonumber(target)
+    plate = tostring(plate or ''):gsub('^%s+', ''):gsub('%s+$', '')
+
+    if not target or not GetPlayerName(target) then
+        notify(src, 'Target player is no longer online.')
+        return
+    end
+    if target == src then
+        notify(src, 'That vehicle already belongs to you.')
+        return
+    end
+    if plate == '' then
+        notify(src, 'Could not read the vehicle plate.')
+        return
+    end
+
+    local QBCore = exports['qb-core']:GetCoreObject()
+    local Admin = QBCore.Functions.GetPlayer(src)
+    local Recipient = QBCore.Functions.GetPlayer(target)
+    if not Admin or not Recipient then
+        notify(src, 'Could not find one of the QBCore players.')
+        return
+    end
+
+    -- Only transfer a vehicle actually owned by the requesting admin.
+    local owned = MySQL.single.await(
+        'SELECT id, vehicle, plate FROM player_vehicles WHERE citizenid = ? AND plate = ? LIMIT 1',
+        { Admin.PlayerData.citizenid, plate }
+    )
+    if not owned then
+        notify(src, ('You do not own vehicle [%s], so it cannot be transferred.'):format(plate))
+        return
+    end
+
+    -- Update both citizenid and license so qb-garages recognizes the recipient.
+    MySQL.update.await(
+        'UPDATE player_vehicles SET citizenid = ?, license = ?, state = 0 WHERE id = ?',
+        { Recipient.PlayerData.citizenid, Recipient.PlayerData.license, owned.id }
+    )
+
+    notify(src, ('Transferred %s [%s] to %s.'):format(
+        owned.vehicle or 'vehicle', plate, GetPlayerName(target)
+    ))
+    notify(target, ('%s transferred vehicle %s [%s] to you. You can now store it in your garage.'):format(
+        GetPlayerName(src) or 'An admin', owned.vehicle or 'vehicle', plate
+    ))
+
+    -- Give the recipient keys to the transferred vehicle if their key resource
+    -- uses the standard qb-vehiclekeys SetOwner event.
+    TriggerClientEvent('fadm:receiveTransferredVehicleKeys', target, plate)
+end)
+
+-- v22: persist admin-spawned vehicles so qb-garages recognizes them as owned.
+RegisterNetEvent('fadm:registerSpawnedVehicle', function(modelName, plate, props)
+    local src = source
+    if not isAdmin(src) then return end
+
+    modelName = tostring(modelName or ''):lower():gsub('%s+', '')
+    plate = tostring(plate or ''):gsub('^%s+', ''):gsub('%s+$', '')
+    if modelName == '' or plate == '' then
+        notify(src, 'Could not register spawned vehicle.')
+        return
+    end
+
+    local QBCore = exports['qb-core']:GetCoreObject()
+    local Player = QBCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    -- qb-garages can only persist vehicles known to QBCore.Shared.Vehicles.
+    local sharedVehicle = QBCore.Shared.Vehicles[modelName]
+    if not sharedVehicle then
+        notify(src, ('%s spawned, but is not in QBCore.Shared.Vehicles so qb-garages cannot store it.'):format(modelName))
+        return
+    end
+
+    local existing = MySQL.scalar.await('SELECT id FROM player_vehicles WHERE plate = ? LIMIT 1', { plate })
+    if existing then return end
+
+    local garage = 'pillboxgarage'
+    local encodedProps = json.encode(type(props) == 'table' and props or {})
+
+    MySQL.insert.await([[
+        INSERT INTO player_vehicles
+            (license, citizenid, vehicle, hash, mods, plate, garage, fuel, engine, body, state)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ]], {
+        Player.PlayerData.license,
+        Player.PlayerData.citizenid,
+        modelName,
+        tostring(joaat(modelName)),
+        encodedProps,
+        plate,
+        garage,
+        100,
+        1000.0,
+        1000.0,
+        0
+    })
+
+    notify(src, ('Vehicle %s [%s] is now registered to you and can be stored in qb-garages.'):format(modelName, plate))
+end)
+
 RegisterNetEvent('fadm:submitReport', function(target, message)
     local src = source
     message = tostring(message or ''):gsub('^%s+', ''):gsub('%s+$', '')

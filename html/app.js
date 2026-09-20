@@ -13,7 +13,7 @@ function render(){
  const players=state.players.filter(p=>String(p.id).includes(q)||p.name.toLowerCase().includes(q));
  $('#playerCount').textContent=state.players.length; $('#dashPlayers').textContent=state.players.length;
  $('#playersList').innerHTML=players.length?players.map(p=>`<article class="player-card"><div class="player-main"><div class="avatar">${esc(initials(p.name))}</div><div class="player-info"><b>${esc(p.name)}</b><div class="muted">Server ID #${p.id}</div></div></div><div class="actions">
- <button type="button" class="primary" data-teleport="goto" data-id="${p.id}">Go To</button><button type="button" class="primary" data-teleport="bring" data-id="${p.id}">Bring</button><button type="button" data-give-item data-id="${p.id}" data-name="${esc(p.name)}">Give Item</button><button data-act="spectate" data-id="${p.id}">Spectate</button><button data-act="freeze" data-id="${p.id}">Freeze</button><button data-act="unfreeze" data-id="${p.id}">Unfreeze</button><button data-act="revive" data-id="${p.id}">Revive</button><button data-act="heal" data-id="${p.id}">Heal</button>
+ <button type="button" class="primary" data-teleport="goto" data-id="${p.id}">Go To</button><button type="button" class="primary" data-teleport="bring" data-id="${p.id}">Bring</button><button type="button" data-give-item data-id="${p.id}" data-name="${esc(p.name)}">Give Item</button><button type="button" data-transfer-vehicle data-id="${p.id}" data-name="${esc(p.name)}">Transfer Vehicle</button><button data-act="spectate" data-id="${p.id}">Spectate</button><button data-act="freeze" data-id="${p.id}">Freeze</button><button data-act="unfreeze" data-id="${p.id}">Unfreeze</button><button data-act="revive" data-id="${p.id}">Revive</button><button data-act="heal" data-id="${p.id}">Heal</button>
  <button data-act="dogs" data-id="${p.id}">Wild Dogs</button><button class="soft-danger" data-act="fire" data-id="${p.id}">Set Fire</button><button class="soft-danger" data-act="explodevehicle" data-id="${p.id}">Explode Vehicle</button><button class="soft-danger" data-act="kill" data-id="${p.id}">Kill</button><button class="soft-danger" data-act="ban" data-id="${p.id}" data-name="${esc(p.name)}">Ban</button>
  </div></article>`).join(''):'<div class="player-card muted">No players match your search.</div>';
  renderReports();
@@ -28,7 +28,14 @@ function renderReports(){
 function confirmAction(action,id,name='player'){const dangerous=['ban','kill','fire','dogs','explodevehicle'];if(!dangerous.includes(action)){post('action',{action,target:+id});return}pending={action,id:+id};$('#confirmTitle').textContent=action==='ban'?'Ban player':'Confirm admin action';$('#confirmText').textContent=action==='ban'?`Ban ${name} from the server?`:`Run "${action}" on server ID ${id}?`;$('#reasonWrap').classList.toggle('hidden',action!=='ban');$('#confirmReason').value='';$('#confirm').classList.remove('hidden')}
 document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a)confirmAction(a.dataset.act,a.dataset.id,a.dataset.name);const r=e.target.closest('[data-reply]');if(r)openReply(+r.dataset.reply);const c=e.target.closest('[data-close-report]');if(c)post('closeReport',{id:+c.dataset.closeReport})});
 function openReply(id){const card=document.querySelector(`[data-report-id="${id}"]`);if(!card)return toast('Unable to open report reply.');const old=$(`#reply-box-${id}`);if(old){old.remove();return}const box=document.createElement('div');box.id=`reply-box-${id}`;box.className='reply-box';box.innerHTML=`<textarea maxlength="500" placeholder="Write a reply to the reporting player..."></textarea><div class="actions"><button class="primary send">Send Reply</button><button class="cancel">Cancel</button></div>`;card.appendChild(box);const ta=box.querySelector('textarea');ta.focus();box.querySelector('.cancel').onclick=()=>box.remove();box.querySelector('.send').onclick=()=>{const message=ta.value.trim();if(!message)return toast('Enter a reply message.');post('replyReport',{id,message});box.remove();toast('Reply sent to player.')}}
-$('#confirmCancel').onclick=()=>{$('#confirm').classList.add('hidden');pending=null};$('#confirmGo').onclick=()=>{if(!pending)return;if(pending.restartSequence){post('startRestartSequence');toast('Restart warning sequence started.');$('#confirm').classList.add('hidden');pending=null;return}if(pending.worldAction==='earthquake'){post('worldAction',{action:'earthquake'});toast('Earthquake initiated.');$('#confirm').classList.add('hidden');pending=null;return}const reason=$('#confirmReason').value.trim();if(pending.action==='ban'&&!reason)return toast('Enter a ban reason.');post('action',{action:pending.action,target:pending.id,reason});$('#confirm').classList.add('hidden');pending=null};
+$('#confirmCancel').onclick=()=>{$('#confirm').classList.add('hidden');pending=null};$('#confirmGo').onclick=()=>{if(!pending)return;
+ if(pending.transferVehicle){
+   post('transferVehicle',{target:pending.target});
+   toast(`Vehicle transfer requested for ${pending.name}.`);
+   $('#confirm').classList.add('hidden');
+   pending=null;
+   return;
+ }if(pending.restartSequence){post('startRestartSequence');toast('Restart warning sequence started.');$('#confirm').classList.add('hidden');pending=null;return}if(pending.worldAction==='earthquake'){post('worldAction',{action:'earthquake'});toast('Earthquake initiated.');$('#confirm').classList.add('hidden');pending=null;return}const reason=$('#confirmReason').value.trim();if(pending.action==='ban'&&!reason)return toast('Enter a ban reason.');post('action',{action:pending.action,target:pending.id,reason});$('#confirm').classList.add('hidden');pending=null};
 $('#playerSearch').oninput=render;$('#reportFilter').onchange=renderReports;$('#refresh').onclick=()=>post('refresh');$('#close').onclick=()=>post('close');
 $('#quickVehicle').onclick=()=>$('#vehiclePanel').classList.toggle('hidden');$('#spawnVehicle').onclick=()=>{const model=$('#vehicleModel').value.trim();if(!model)return toast('Enter a vehicle model.');post('spawnVehicle',{model});$('#vehicleModel').value='';toast(`Spawning ${model}...`)};
 $('#reportMessage').oninput=e=>$('#charCount').textContent=`${e.target.value.length} / 500`;$('#submitReport').onclick=()=>{const message=$('#reportMessage').value.trim(),target=$('#reportTarget').value;if(!message)return toast('Enter report details.');post('submitReport',{target:target||null,message});$('#reportMessage').value='';$('#charCount').textContent='0 / 500';toast('Report submitted.')};
@@ -144,4 +151,22 @@ document.addEventListener('click', (e) => {
     modal.classList.add('hidden');
     giveItemTarget = null;
   }
+});
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-transfer-vehicle]');
+  if (!btn) return;
+  e.preventDefault();
+
+  pending = {
+    transferVehicle: true,
+    target: Number(btn.dataset.id),
+    name: btn.dataset.name || 'this player'
+  };
+
+  document.querySelector('#confirmTitle').textContent = 'Transfer vehicle?';
+  document.querySelector('#confirmText').textContent =
+    `Transfer the vehicle you are currently sitting in to ${pending.name}? Ownership will move to that player.`;
+  document.querySelector('#reasonWrap').classList.add('hidden');
+  document.querySelector('#confirm').classList.remove('hidden');
 });

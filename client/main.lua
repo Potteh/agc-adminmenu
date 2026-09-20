@@ -176,12 +176,19 @@ RegisterNetEvent('fadm:spawnVehicle', function(modelName)
         SetVehicleOnGroundProperly(vehicle)
         SetPedIntoVehicle(ped, vehicle, -1)
 
-    -- Give the admin keys using qb-vehiclekeys.
-    local plate = GetVehicleNumberPlateText(vehicle)
-    TriggerEvent('vehiclekeys:client:SetOwner', plate)
+        -- Give the admin keys, then register the spawned vehicle as owned.
+        local plate = GetVehicleNumberPlateText(vehicle)
+        TriggerEvent('vehiclekeys:client:SetOwner', plate)
 
+        local props = {}
+        local QBCore = exports['qb-core']:GetCoreObject()
+        if QBCore and QBCore.Functions and QBCore.Functions.GetVehicleProperties then
+            props = QBCore.Functions.GetVehicleProperties(vehicle) or {}
+        end
+
+        TriggerServerEvent('fadm:registerSpawnedVehicle', modelName, plate, props)
         SetVehicleEngineOn(vehicle, true, true, false)
-        TriggerEvent('fadm:notify', ('Spawned %s.'):format(modelName))
+        TriggerEvent('fadm:notify', ('Spawned %s and registered it as your owned vehicle.'):format(modelName))
     end
     SetModelAsNoLongerNeeded(model)
 end)
@@ -483,4 +490,36 @@ end)
 RegisterNUICallback('giveItem', function(data, cb)
     TriggerServerEvent('fadm:giveItem', tonumber(data.target), tostring(data.item or ''), tonumber(data.amount) or 1)
     cb({ ok = true })
+end)
+
+
+RegisterNUICallback('transferVehicle', function(data, cb)
+    local target = tonumber(data.target)
+    local ped = PlayerPedId()
+
+    if not target then
+        TriggerEvent('fadm:notify', 'Invalid target player.')
+        cb({ ok = false })
+        return
+    end
+
+    if not IsPedInAnyVehicle(ped, false) then
+        TriggerEvent('fadm:notify', 'You must be sitting in the vehicle you want to transfer.')
+        cb({ ok = false })
+        return
+    end
+
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    if vehicle == 0 then
+        cb({ ok = false })
+        return
+    end
+
+    local plate = GetVehicleNumberPlateText(vehicle)
+    TriggerServerEvent('fadm:transferVehicle', target, plate)
+    cb({ ok = true })
+end)
+
+RegisterNetEvent('fadm:receiveTransferredVehicleKeys', function(plate)
+    TriggerEvent('vehiclekeys:client:SetOwner', tostring(plate or ''))
 end)

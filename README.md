@@ -189,3 +189,19 @@ That made it an independent full-screen absolute NUI layer, which looked like th
 game had frozen and could leave focus trapped. The modal now lives inside `#app`,
 the script loads after the modal markup, and the modal can be dismissed with
 Cancel, Escape, or by clicking its backdrop.
+
+## v22 qb-garages ownership fix
+Admin-spawned vehicles are now inserted into QBCore's `player_vehicles` table for
+the spawning admin. This makes qb-garages recognize the plate as an owned vehicle.
+The vehicle model must exist in `QBCore.Shared.Vehicles`; otherwise the admin gets
+a notification explaining why it cannot be persisted. The initial database state
+is `0` (out), and qb-garages changes it to stored when the vehicle is parked.
+
+## v23 Vehicle transfer
+Player cards now include **Transfer Vehicle**. The admin must be sitting in the
+vehicle being transferred. After confirmation, the server verifies that the plate
+is actually owned by the admin in `player_vehicles`, then changes both `citizenid`
+and `license` to the selected online player. The recipient receives qb-vehiclekeys
+ownership and can store the vehicle through qb-garages.
+
+This transfers ownership rather than duplicating the database row.
