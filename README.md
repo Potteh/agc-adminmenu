@@ -123,3 +123,10 @@ ensure fivem_admin_menu
 - Blackout Enable/Disable uses `qb-weathersync:setBlackout`.
 - Earthquake now causes eligible players who are on foot to intermittently ragdoll during the 15-second quake.
 - Players in vehicles are not ragdolled by the earthquake.
+
+## v13 fixes
+- Weather/time changes now force an immediate qb-weathersync `RequestStateSync` after the official export updates state.
+- Earthquake no longer uses JavaScript `confirm()`; confirmation stays inside the FiveM NUI.
+- Earthquake camera intensity reduced to 0.18 and changed to a single gentle road-vibration shake.
+- On-foot ragdoll remains, with less frequent falling.
+- If `Config.RealTimeSync = true` in qb-weathersync, its real-time loop can later advance/replace manually selected time; disable real-time sync if you want manual admin time to remain authoritative.

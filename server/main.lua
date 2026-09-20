@@ -338,6 +338,7 @@ RegisterNetEvent('fadm:worldAction', function(action, value)
 
         local success = exports['qb-weathersync']:setTime(hour, 0)
         if success then
+            TriggerEvent('qb-weathersync:server:RequestStateSync')
             notify(src, hour == 0 and 'Server changed to night.' or 'Server changed to day.')
         else
             notify(src, 'Unable to change server time.')
@@ -358,6 +359,7 @@ RegisterNetEvent('fadm:worldAction', function(action, value)
 
         local success = exports['qb-weathersync']:setWeather(weather)
         if success then
+            TriggerEvent('qb-weathersync:server:RequestStateSync')
             notify(src, ('Weather changed to %s.'):format(weather))
         else
             notify(src, ('qb-weathersync rejected weather type %s.'):format(weather))
@@ -366,11 +368,13 @@ RegisterNetEvent('fadm:worldAction', function(action, value)
     elseif action == 'dynamicweather' then
         local enabled = value == true or value == 'true' or value == 1 or value == '1'
         local state = exports['qb-weathersync']:setDynamicWeather(enabled)
+        TriggerEvent('qb-weathersync:server:RequestStateSync')
         notify(src, state and 'Dynamic weather enabled.' or 'Dynamic weather disabled.')
 
     elseif action == 'blackout' then
         local enabled = value == true or value == 'true' or value == 1 or value == '1'
         local state = exports['qb-weathersync']:setBlackout(enabled)
+        TriggerEvent('qb-weathersync:server:RequestStateSync')
         notify(src, state and 'Blackout enabled.' or 'Blackout disabled.')
 
     elseif action == 'earthquake' then

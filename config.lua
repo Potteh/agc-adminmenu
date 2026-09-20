@@ -13,4 +13,4 @@ Config.BanFile = 'bans.json'
 Config.FireDurationMs = 5000
 
 Config.EarthquakeDurationMs = 15000
-Config.EarthquakeIntensity = 1.0
+Config.EarthquakeIntensity = 0.18

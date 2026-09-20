@@ -290,20 +290,20 @@ end)
 
 RegisterNetEvent('fadm:earthquake', function(duration, intensity)
     duration = tonumber(duration) or 15000
-    intensity = tonumber(intensity) or 1.0
+    intensity = math.min(tonumber(intensity) or 0.18, 0.25)
 
     CreateThread(function()
         local finish = GetGameTimer() + duration
-        local nextRagdoll = 0
+        local nextRagdoll = GetGameTimer() + math.random(1000, 2500)
+
+        -- Start one gentle continuous shake instead of repeatedly stacking
+        -- LARGE_EXPLOSION_SHAKE every few hundred milliseconds.
+        ShakeGameplayCam('ROAD_VIBRATION_SHAKE', intensity)
 
         while GetGameTimer() < finish do
-            ShakeGameplayCam('LARGE_EXPLOSION_SHAKE', intensity)
-
             local ped = PlayerPedId()
             local now = GetGameTimer()
 
-            -- Players on foot can lose their footing during the quake.
-            -- Do not ragdoll dead players, players in vehicles, or players already falling.
             if now >= nextRagdoll
                 and DoesEntityExist(ped)
                 and not IsEntityDead(ped)
@@ -311,16 +311,13 @@ RegisterNetEvent('fadm:earthquake', function(duration, intensity)
                 and not IsPedFalling(ped)
                 and not IsPedRagdoll(ped) then
 
-                -- About a 45% chance each check so falling feels irregular rather than constant.
-                if math.random(100) <= 45 then
-                    SetPedToRagdoll(ped, 1200, 1800, 0, false, false, false)
-                    nextRagdoll = now + math.random(1800, 3200)
-                else
-                    nextRagdoll = now + 900
+                if math.random(100) <= 35 then
+                    SetPedToRagdoll(ped, 900, 1400, 0, false, false, false)
                 end
+                nextRagdoll = now + math.random(2200, 4000)
             end
 
-            Wait(350)
+            Wait(200)
         end
 
         StopGameplayCamShaking(true)
