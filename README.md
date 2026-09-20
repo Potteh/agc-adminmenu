@@ -235,3 +235,11 @@ The page includes refresh and copy buttons.
 Each player card now has **Set Waypoint**. The target client returns its current
 coordinates to the server, which relays them only to the requesting authorized
 admin. The admin client then uses `SetNewWaypoint(x, y)` to place the GPS waypoint.
+
+## v30 Ragdoll + Developer God Mode
+- Player cards include **Ragdoll**, which forces the selected player into ragdoll
+  for about five seconds. If they are in a vehicle, the client first attempts to
+  make them exit before applying ragdoll.
+- Developer Tools includes **God Mode** for the admin's own character. It toggles
+  entity/player invincibility and disables ragdoll while active. A maintenance
+  loop reapplies the native flags once per second.

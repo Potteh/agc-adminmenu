@@ -19,3 +19,5 @@
 .developer-card .inline{margin-top:6px}
 .developer-card input[readonly]{font-family:monospace}
 @media(max-width:700px){.coord-grid{grid-template-columns:1fr}}
+
+.dev-status{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04)}.dev-status span{color:#8f9bab;font-size:12px;text-transform:uppercase}.dev-status strong{font-size:13px}

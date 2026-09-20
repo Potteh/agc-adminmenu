@@ -214,3 +214,16 @@ document.addEventListener('click', async (e) => {
     toast('Could not set player waypoint.');
   }
 });
+
+let godModeEnabled=false;
+$('#godModeBtn').onclick=async()=>{
+  try{
+    const r=await post('toggleGodMode');
+    const d=await r.json();
+    godModeEnabled=!!d.enabled;
+    $('#godModeStatus').textContent=godModeEnabled?'ON':'OFF';
+    $('#godModeBtn').textContent=godModeEnabled?'Disable God Mode':'Enable God Mode';
+    $('#godModeBtn').classList.toggle('danger',godModeEnabled);
+    toast(`God Mode ${godModeEnabled?'enabled':'disabled'}.`);
+  }catch(e){toast('Could not toggle God Mode.')}
+};

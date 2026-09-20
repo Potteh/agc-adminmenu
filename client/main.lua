@@ -597,3 +597,43 @@ RegisterNUICallback('waypointPlayer', function(data, cb)
     end
     cb({ok = target ~= nil})
 end)
+
+
+RegisterNetEvent('fadm:ragdollPlayer', function()
+    local ped = PlayerPedId()
+    if IsPedInAnyVehicle(ped, false) then
+        local vehicle = GetVehiclePedIsIn(ped, false)
+        TaskLeaveVehicle(ped, vehicle, 4160)
+        Wait(500)
+    end
+    SetPedToRagdoll(ped, 5000, 5000, 0, false, false, false)
+end)
+
+local fadmGodMode = false
+
+RegisterNUICallback('toggleGodMode', function(_, cb)
+    fadmGodMode = not fadmGodMode
+    local ped = PlayerPedId()
+    SetEntityInvincible(ped, fadmGodMode)
+    SetPlayerInvincible(PlayerId(), fadmGodMode)
+    SetPedCanRagdoll(ped, not fadmGodMode)
+
+    if fadmGodMode then
+        SetEntityHealth(ped, GetEntityMaxHealth(ped))
+    end
+
+    cb({ok=true, enabled=fadmGodMode})
+end)
+
+-- Re-apply invincibility because ped replacement/respawn can reset native flags.
+CreateThread(function()
+    while true do
+        Wait(1000)
+        if fadmGodMode then
+            local ped = PlayerPedId()
+            SetEntityInvincible(ped, true)
+            SetPlayerInvincible(PlayerId(), true)
+            SetPedCanRagdoll(ped, false)
+        end
+    end
+end)

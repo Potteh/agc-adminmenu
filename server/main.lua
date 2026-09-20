@@ -261,6 +261,10 @@ RegisterNetEvent('fadm:action', function(action, target, reason)
         end
         TriggerClientEvent('fadm:spawnVehicle', src, modelName)
 
+    elseif action == 'ragdoll' then
+        TriggerClientEvent('fadm:ragdollPlayer', target)
+        notify(src, ('Ragdolled %s.'):format(GetPlayerName(target)))
+
     elseif action == 'stripclothes' then
         TriggerClientEvent('fadm:stripClothes', target)
         notify(src, ('Removed shirt, pants, and shoes from %s.'):format(GetPlayerName(target)))
