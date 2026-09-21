@@ -516,3 +516,7 @@ screen. The v68 UI cleanup removed the old per-player card action buttons, but
 these three Manage Player actions were still trying to find and click those
 deleted buttons. They now open their existing modals/confirmation flow directly
 for the selected player. No server-side action logic was changed.
+
+
+## v75 Discord Admin Logs
+Existing MySQL admin audit entries are also sent to Discord through a server-side webhook. Set `Config.DiscordLogs.Webhook` in `config.lua`. The live webhook secret is intentionally not embedded in this ZIP. Discord mentions are disabled and failed deliveries are reported in the server console.

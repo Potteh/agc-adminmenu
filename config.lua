@@ -1,5 +1,13 @@
 Config = {}
 
+-- Discord admin audit logging (server-side only)
+Config.DiscordLogs = {
+    Enabled = true,
+    Webhook = 'YOUR_DISCORD_WEBHOOK_URL',
+    Username = 'FiveM Admin Logs',
+    AvatarUrl = ''
+}
+
 -- Admins need this ACE permission.
 Config.AdminAce = 'fivem.admin'
 

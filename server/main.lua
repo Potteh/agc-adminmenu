@@ -867,6 +867,36 @@ local function fetchAdminLogs()
  return MySQL.query.await(('SELECT id, DATE_FORMAT(created_at, "%%Y-%%m-%%d %%H:%%i:%%s") AS time, admin_id AS adminId, admin_name AS adminName, target_id AS targetId, target_name AS targetName, action, details FROM fivem_admin_logs ORDER BY id DESC LIMIT %d'):format(max)) or {}
 end
 
+local function sendDiscordAdminLog(adminSrc,adminName,tid,targetName,action,details)
+ local cfg=Config.DiscordLogs or {}
+ local webhook=tostring(cfg.Webhook or '')
+ if cfg.Enabled==false or webhook=='' or webhook=='YOUR_DISCORD_WEBHOOK_URL' then return end
+ if not webhook:match('^https://discord%.com/api/webhooks/') and not webhook:match('^https://discordapp%.com/api/webhooks/') then
+  print('[fivem_admin] Discord admin log webhook is invalid.')
+  return
+ end
+ local function clean(v,fallback)
+  v=tostring(v or fallback or 'N/A')
+  if #v>1000 then v=v:sub(1,997)..'...' end
+  return v
+ end
+ local fields={
+  {name='Action',value=clean(action,'Unknown'),inline=false},
+  {name='Administrator',value=clean(('%s (ID %s)'):format(adminName or 'Console',adminSrc or 0)),inline=true},
+  {name='Target',value=tid and clean(('%s (ID %s)'):format(targetName or 'Unknown',tid)) or 'Server',inline=true}
+ }
+ if details and tostring(details)~='' then fields[#fields+1]={name='Details',value=clean(details),inline=false} end
+ local payload={
+  username=cfg.Username or 'FiveM Admin Logs',
+  avatar_url=(cfg.AvatarUrl and cfg.AvatarUrl~='') and cfg.AvatarUrl or nil,
+  allowed_mentions={parse={}},
+  embeds={{title='Admin Audit Log',description='A successful administrative action was recorded.',fields=fields,footer={text='FiveM Admin Menu'},timestamp=os.date('!%Y-%m-%dT%H:%M:%SZ')}}
+ }
+ PerformHttpRequest(webhook,function(code)
+  if code<200 or code>=300 then print(('[fivem_admin] Discord admin log delivery failed (HTTP %s).'):format(code)) end
+ end,'POST',json.encode(payload),{['Content-Type']='application/json'})
+end
+
 addAdminLog=function(adminSrc,target,action,details)
  local tid=tonumber(target)
  local adminName=adminSrc==0 and 'Console' or (GetPlayerName(adminSrc) or ('ID '..adminSrc))
@@ -874,6 +904,7 @@ addAdminLog=function(adminSrc,target,action,details)
  MySQL.insert.await('INSERT INTO fivem_admin_logs (admin_id,admin_name,target_id,target_name,action,details) VALUES (?,?,?,?,?,?)',{
   tonumber(adminSrc),adminName,tid,targetName,tostring(action or 'Unknown'),tostring(details or '')
  })
+ sendDiscordAdminLog(adminSrc,adminName,tid,targetName,action,details)
 end
 
 RegisterNetEvent('fadm:requestAdminLogs',function()
