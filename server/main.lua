@@ -66,6 +66,8 @@ end
 
 
 -- v29: set an admin's map waypoint to an online player's current position.
+local addAdminLog
+
 RegisterNetEvent('fadm:waypointToPlayer', function(target)
     local src = source
     if not isAdmin(src) then return end
@@ -800,8 +802,10 @@ RegisterNetEvent('fadm:manageMoney', function(target, account, operation, amount
         local balance=tonumber(Player.PlayerData.money and Player.PlayerData.money[account]) or 0
         if balance<amount then notify(src,('Player only has $%s in %s.'):format(balance,account)) return end
         Player.Functions.RemoveMoney(account,amount,'fivem-admin')
+        addAdminLog(src,target,'Remove Money',('$%s from %s'):format(amount,account))
     else
         Player.Functions.AddMoney(account,amount,'fivem-admin')
+        addAdminLog(src,target,'Give Money',('$%s to %s'):format(amount,account))
     end
     notify(src,('%s $%s %s %s.'):format(operation=='add' and 'Added' or 'Removed',amount,operation=='add' and 'to' or 'from',GetPlayerName(target)))
     TriggerClientEvent('QBCore:Notify',target,('$%s was %s your %s by an administrator.'):format(amount,operation=='add' and 'added to' or 'removed from',account),operation=='add' and 'success' or 'primary')
@@ -817,6 +821,7 @@ RegisterNetEvent('fadm:kickPlayer', function(target, reason)
     if #reason>250 then reason=reason:sub(1,250) end
     local targetName=GetPlayerName(target)
     notify(src,('Kicked %s.'):format(targetName))
+    addAdminLog(src,target,'Kick',reason)
     DropPlayer(target,reason)
 end)
 
@@ -877,6 +882,15 @@ RegisterNetEvent('fadm:setVehicleGarage', function(target, plate, garage)
     local Player=target and QBCore.Functions.GetPlayer(target) or nil
     if not Player then notify(src,'Player is no longer online.') return end
     local changed=MySQL.update.await('UPDATE player_vehicles SET garage = ?, state = 1 WHERE citizenid = ? AND plate = ?',{garage,Player.PlayerData.citizenid,plate})
-    if changed and changed>0 then notify(src,('Moved %s to garage %s.'):format(plate,garage))
+    if changed and changed>0 then addAdminLog(src,target,'Move Vehicle',('%s -> %s'):format(plate,garage)); notify(src,('Moved %s to garage %s.'):format(plate,garage))
     else notify(src,'Owned vehicle was not found.') end
 end)
+
+local adminLogs={}
+do local raw=LoadResourceFile(GetCurrentResourceName(),Config.AdminLogFile or 'admin_logs.json');if raw and raw~='' then local ok,d=pcall(json.decode,raw);if ok and type(d)=='table' then adminLogs=d end end end
+local function saveAdminLogs() SaveResourceFile(GetCurrentResourceName(),Config.AdminLogFile or 'admin_logs.json',json.encode(adminLogs),-1) end
+addAdminLog=function(adminSrc,target,action,details)
+ local tid=tonumber(target);table.insert(adminLogs,1,{time=os.date('%Y-%m-%d %H:%M:%S'),adminName=adminSrc==0 and 'Console' or (GetPlayerName(adminSrc) or ('ID '..adminSrc)),targetName=(tid and GetPlayerName(tid)) or (tid and ('ID '..tid)) or 'Server',action=tostring(action or 'Unknown'),details=tostring(details or '')})
+ while #adminLogs>(tonumber(Config.MaxAdminLogs) or 1000) do table.remove(adminLogs) end;saveAdminLogs()
+end
+RegisterNetEvent('fadm:requestAdminLogs',function() local src=source;if not isAdmin(src) then return end;TriggerClientEvent('fadm:adminLogsResponse',src,adminLogs) end)

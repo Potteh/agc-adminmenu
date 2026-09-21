@@ -19,6 +19,7 @@
         <button class="nav" data-tab="players">♟ <span>Players</span><b id="playerCount">0</b></button>
         <button class="nav" data-tab="reports">⚑ <span>Reports</span><b id="reportCount">0</b></button>
         <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
+        <button class="nav" data-tab="adminlogs">☷ <span>Admin Logs</span></button>
         <button class="nav" data-tab="developer">⌘ <span>Developer</span></button>
         <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
       </nav>
@@ -82,7 +83,8 @@
           </div>
         </section>
 
-        <section id="developer" class="page">
+        <section id="adminlogs" class="page"><div class="section-head"><div><h2>Admin Logs</h2><p>Persistent audit trail for administrative actions.</p></div><button id="refreshAdminLogs" class="primary">Refresh Logs</button></div><div class="toolbar"><input id="adminLogSearch" type="text" placeholder="Search admin, player, action, details..."><select id="adminLogFilter"><option value="">All Actions</option></select></div><div id="adminLogList" class="admin-log-list"><div class="pi-note">Open this page to load logs.</div></div></section>
+<section id="developer" class="page">
           <div class="section-head"><div><h2>Developer Tools</h2><p>Quick utilities for building and configuring server resources.</p></div></div>
           <div class="world-grid">
             <article class="world-card developer-card">

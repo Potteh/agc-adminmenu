@@ -757,3 +757,7 @@ RegisterNUICallback('setVehicleGarage',function(data,cb)
  TriggerServerEvent('fadm:setVehicleGarage',data.target,data.plate,data.garage)
  cb({ok=true})
 end)
+
+local fadmAdminLogCb=nil
+RegisterNUICallback('getAdminLogs',function(_,cb) fadmAdminLogCb=cb;TriggerServerEvent('fadm:requestAdminLogs');SetTimeout(3000,function() if fadmAdminLogCb then fadmAdminLogCb({ok=false,logs={}});fadmAdminLogCb=nil end end) end)
+RegisterNetEvent('fadm:adminLogsResponse',function(rows) if fadmAdminLogCb then fadmAdminLogCb({ok=true,logs=rows or {}});fadmAdminLogCb=nil end end)

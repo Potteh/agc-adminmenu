@@ -286,3 +286,6 @@ player_vehicles rows including model, plate, garage, stored state, fuel, engine,
 and body condition. A vehicle can be moved to another qb-garages garage by its
 garage spawn/config name. Moving it sets state=1 so qb-garages treats it as stored.
 All database operations are server-side and ACE protected.
+
+## v42 Admin Logs
+Adds persistent admin_logs.json plus a searchable Admin Logs page. Give/remove money, kicks, and garage moves are recorded server-side. Default retention: 1000 entries.
