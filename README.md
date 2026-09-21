@@ -456,3 +456,12 @@ Restored the original StartShapeTestRay approach that successfully detected
 entities, increased range to 50m, and now waits briefly for the asynchronous
 shape test to complete instead of assuming the result is immediately ready.
 The unsafe network lookup natives remain removed.
+
+## v68 UI Cleanup
+The Players page no longer duplicates every administrative action on each player
+card. Player cards are now compact and route actions through Manage Player.
+
+Manage Player has been reorganized into Movement & Observation, Player State,
+Character & Economy, Vehicles, and Moderation groups. Identity/QBCore information
+uses a cleaner two-column overview on larger displays. No server-side behavior,
+permissions, report logic, or the working v67 Entity Debugger raycast was changed.

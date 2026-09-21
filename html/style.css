@@ -81,3 +81,21 @@ body.admin-off-duty #dashboard .stat,body.admin-off-duty #dashboard .quick-grid 
 .role-hidden{display:none !important}
 
 .entity-debug-card{grid-column:span 2}.entity-debug{max-height:390px;overflow:auto;margin:12px 0}.debug-row{display:flex;justify-content:space-between;gap:18px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}.debug-row span{opacity:.62}.debug-row b{text-align:right;word-break:break-all}
+
+/* v68 UI cleanup */
+.player-card-clean{padding:12px 14px}
+.player-card-clean .player-main{width:100%}
+.player-card-clean .manage-player-btn{margin-left:auto;white-space:nowrap}
+.player-meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.mini-badge{font-size:10px;color:#aab5c4;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);padding:3px 7px;border-radius:999px}
+.pi-overview{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.action-section{padding-bottom:8px}
+.action-group{padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}
+.action-group:first-of-type{border-top:0;padding-top:2px}
+.action-group-title{display:block;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#77879b;margin-bottom:8px}
+.action-group .pi-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.action-group .pi-actions button{min-height:38px}
+.danger-group{margin-top:3px}
+.danger-group .action-group-title{color:#c98289}
+#players .toolbar{position:sticky;top:-22px;z-index:5;padding:0 0 12px;background:#0b0f15}
+@media(max-width:900px){.pi-overview{grid-template-columns:1fr}.action-group .pi-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
