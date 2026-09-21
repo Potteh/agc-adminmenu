@@ -127,3 +127,15 @@ body.admin-off-duty #dashboard .stat,body.admin-off-duty #dashboard .quick-grid 
   padding-right:6px;
   padding-bottom:40px;
 }
+
+/* v71: prevent Players search toolbar bleeding through Manage Player overlays */
+#players .toolbar{z-index:2 !important}
+.modal,.modal-backdrop,.drawer,.overlay,#playerInfoModal{
+  z-index:1000 !important;
+}
+#playerInfoModal .modal-card,
+#playerInfoModal .modal-content,
+#playerInfoModal .drawer-card{
+  position:relative;
+  z-index:1001 !important;
+}

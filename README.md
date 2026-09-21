@@ -486,3 +486,10 @@ The working v67 Entity Debugger raycast and server-side behavior remain unchange
   search bar stays at the top.
 - Mouse-wheel scrolling on Players now scrolls the player results instead of
   moving the whole admin workspace.
+
+## v71 Search overlay fix
+The search bar was correctly positioned on the Players page, but its z-index
+allowed it to render above the Manage Player overlay. Lowered the Players toolbar
+stacking level and explicitly placed modal/drawer overlays above it. This keeps
+the search bar visible at the top of Players while completely hiding it whenever
+Manage Player is open.
