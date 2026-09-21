@@ -251,3 +251,9 @@ insertion did not survive the generated player-card markup.
 
 ## v32 Developer expansion
 Added Noclip, Invisible Mode, Teleport to Waypoint, and Entity Debugger to Developer Tools.
+
+## v33 UI scrolling fix
+The workspace is now a fixed-height flex layout. The header remains visible while
+the main page content gets its own vertical scrollbar. This allows the expanded
+Developer Tools page to scroll through Coordinates, Noclip, Invisible Mode,
+Teleport to Waypoint, Entity Debugger, and God Mode.

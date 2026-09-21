@@ -23,3 +23,67 @@
 .dev-status{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04)}.dev-status span{color:#8f9bab;font-size:12px;text-transform:uppercase}.dev-status strong{font-size:13px}
 
 .entity-debug{font-family:monospace;font-size:12px;line-height:1.7;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04);min-height:44px}
+
+
+/* v33: Admin UI scrolling fix */
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+.shell {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.workspace {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace > header {
+  flex: 0 0 auto;
+}
+
+.workspace > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding-bottom: 48px;
+  scrollbar-gutter: stable;
+}
+
+.workspace > main::-webkit-scrollbar {
+  width: 10px;
+}
+
+.workspace > main::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.025);
+}
+
+.workspace > main::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.16);
+  border-radius: 8px;
+}
+
+.workspace > main::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,.25);
+}
+
+/* Prevent large Developer cards from forcing the page outside its scroll area. */
+#developer {
+  min-height: min-content;
+  padding-bottom: 24px;
+}
