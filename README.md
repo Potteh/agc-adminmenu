@@ -316,3 +316,9 @@ Manage Player now includes Vehicle Management for the vehicle the selected playe
 is currently inside: Repair, Clean, Refuel, Flip Upright, Unlock, Max Mods, and
 Delete Vehicle. Requests are ACE-validated server-side and every vehicle action
 is written directly to the persistent Admin Logs.
+
+## v48 Delete Vehicle NUI Freeze Fix
+Removed the browser-native confirm() call from Delete Vehicle. FiveM NUI can
+hang/freeze on synchronous browser dialogs. Delete Vehicle now uses the admin
+menu's own asynchronous confirmation modal before sending the existing
+server-validated vehicle delete action.

@@ -473,7 +473,18 @@ document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-vehicle-manage]');
  if(!b||!managementTarget)return;
  const action=b.dataset.vehicleManage;
- if(action==='delete'&&!confirm('Delete the vehicle the selected player is currently inside?'))return;
+ if(action==='delete'){
+   $('#vehicleDeleteConfirm').classList.remove('hidden');
+   return;
+ }
  await post('vehicleManage',{target:managementTarget.id,action});
  toast(`Vehicle action sent: ${action}.`);
 });
+
+$('#vehicleDeleteCancel').onclick=()=>$('#vehicleDeleteConfirm').classList.add('hidden');
+$('#vehicleDeleteConfirmBtn').onclick=async()=>{
+ if(!managementTarget)return;
+ $('#vehicleDeleteConfirm').classList.add('hidden');
+ await post('vehicleManage',{target:managementTarget.id,action:'delete'});
+ toast('Delete Vehicle action sent.');
+};
