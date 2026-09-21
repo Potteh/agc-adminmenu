@@ -380,3 +380,10 @@ Report button. `/report` now enters an explicit player-report mode. In that mode
 Submit Report and Close are allowed regardless of admin duty/ACE status, while
 all admin controls remain inaccessible. After submission the standalone report
 UI closes automatically.
+
+## v58 Announcements + On-Duty Staff
+On-duty admins can broadcast Normal, Warning, or Emergency announcements from
+the Dashboard. Every connected player receives a centered CSS announcement even
+when no admin/report UI is open. Messages are limited to 500 characters and are
+recorded in persistent Admin Logs. The Dashboard also includes an On-Duty Staff
+roster with admin names and server IDs, refreshed on duty changes or manually.

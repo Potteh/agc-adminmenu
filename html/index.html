@@ -8,6 +8,7 @@
 </head>
 <body>
   <div id="adminReportAlerts" class="admin-report-alerts"></div>
+  <div id="serverAnnouncements" class="server-announcements"></div>
 <div id="app" class="hidden">
   <div class="shell">
     <aside>
@@ -50,8 +51,15 @@
           <div class="quick">
             <button data-jump="players"><span class="qicon">♟</span><b>Manage Players</b><small>Moderation, spectate & actions</small></button>
             <button data-jump="reports"><span class="qicon">⚑</span><b>Player Reports</b><small>Review and reply to reports</small></button>
-            <button id="quickVehicle"><span class="qicon">▣</span><b>Spawn Vehicle</b><small>Create a vehicle for yourself</small></button><button id="adminDutyBtn"><span class="qicon">★</span><b>Go On Duty</b><small>Toggle your admin duty status</small></button>
+            <button id="quickVehicle"><span class="qicon">▣</span><b>Spawn Vehicle</b><small>Create a vehicle for yourself</small></button><button id="adminDutyBtn"><span class="qicon">★</span><b>Go On Duty</b><small>Toggle your admin duty status</small></button><button id="announcementBtn"><span class="qicon">!</span><b>Announcement</b><small>Broadcast a message to all players</small></button>
           </div>
+          <div id="announcementPanel" class="drawer hidden">
+            <div><h3>Server Announcement</h3><p>Broadcast a styled message to every connected player.</p></div>
+            <label>Type</label><select id="announcementType"><option value="normal">Normal</option><option value="warning">Warning</option><option value="emergency">Emergency</option></select>
+            <label>Message</label><textarea id="announcementMessage" maxlength="500" placeholder="Enter announcement..."></textarea>
+            <div class="form-foot"><span id="announcementCount">0 / 500</span><button id="sendAnnouncement" class="primary">Send Announcement</button></div>
+          </div>
+          <div class="drawer" id="dutyRosterPanel"><div class="section-head"><div><h3>On-Duty Staff</h3><p>Administrators currently available.</p></div><button id="refreshDutyRoster">Refresh</button></div><div id="dutyRosterList" class="duty-roster-list"><div class="muted">No admins on duty.</div></div></div>
           <div id="vehiclePanel" class="drawer hidden">
             <div><h3>Spawn Vehicle</h3><p>Enter a GTA vehicle model name.</p></div>
             <div class="inline"><input id="vehicleModel" placeholder="e.g. sultan, adder, police"><button id="spawnVehicle" class="primary">Spawn</button></div>

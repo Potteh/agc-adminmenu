@@ -533,3 +533,31 @@ document.addEventListener('click',e=>{
  if(b.id==='adminDutyBtn'||b.id==='close'||b.dataset.tab==='dashboard')return;
  e.preventDefault();e.stopImmediatePropagation();toast('Go on admin duty to use administrative functions.');
 },true);
+
+let dutyRoster=[];
+function renderDutyRoster(){
+ const box=$('#dutyRosterList');if(!box)return;
+ box.innerHTML=dutyRoster.length?dutyRoster.map(a=>`<div class="duty-roster-row"><span class="duty-dot"></span><b>${esc(a.name)}</b><small>#${a.id}</small></div>`).join(''):'<div class="muted">No admins on duty.</div>';
+}
+$('#announcementBtn').onclick=()=>$('#announcementPanel').classList.toggle('hidden');
+$('#announcementMessage').oninput=e=>$('#announcementCount').textContent=`${e.target.value.length} / 500`;
+$('#sendAnnouncement').onclick=async()=>{
+ const message=$('#announcementMessage').value.trim(),kind=$('#announcementType').value;
+ if(!message)return toast('Enter an announcement message.');
+ await post('sendAnnouncement',{kind,message});$('#announcementMessage').value='';$('#announcementCount').textContent='0 / 500';toast('Announcement sent.');
+};
+$('#refreshDutyRoster').onclick=()=>post('getDutyRoster',{});
+function showServerAnnouncement(data){
+ const host=$('#serverAnnouncements');if(!host||!data)return;
+ const el=document.createElement('div');const kind=['warning','emergency'].includes(data.kind)?data.kind:'normal';
+ el.className=`server-announcement ${kind}`;
+ const title=kind==='emergency'?'EMERGENCY ANNOUNCEMENT':kind==='warning'?'SERVER WARNING':'SERVER ANNOUNCEMENT';
+ el.innerHTML=`<div class="sa-title">${title}</div><div class="sa-message">${esc(data.message||'')}</div><div class="sa-sender">Staff: ${esc(data.sender||'Administration')}</div>`;
+ host.appendChild(el);setTimeout(()=>el.remove(),10000);
+}
+window.addEventListener('message',e=>{
+ const m=e.data||{};
+ if(m.action==='serverAnnouncement')showServerAnnouncement(m.data);
+ else if(m.action==='dutyRoster'){dutyRoster=Array.isArray(m.roster)?m.roster:[];renderDutyRoster()}
+});
+setTimeout(()=>post('getDutyRoster',{}).catch(()=>{}),800);

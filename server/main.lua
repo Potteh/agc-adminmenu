@@ -968,6 +968,7 @@ RegisterNetEvent('fadm:toggleDuty',function()
  TriggerClientEvent('fadm:dutyState',src,adminDuty[src])
  TriggerClientEvent('fadm:updateData',src,{players=adminDuty[src] and playerList() or {},reports=adminDuty[src] and reports or {},onDuty=adminDuty[src]})
  notify(src,adminDuty[src] and 'You are now on admin duty.' or 'You are now off admin duty.')
+ broadcastDutyRoster()
 end)
 AddEventHandler('playerDropped',function() adminDuty[source]=nil end)
 
@@ -987,4 +988,44 @@ RegisterNetEvent('fadm:requestWarnings',function(target,rid)
  if not Player then TriggerClientEvent('fadm:warningsResponse',src,rid,{}) return end
  local rows=MySQL.query.await('SELECT id, DATE_FORMAT(created_at,"%Y-%m-%d %H:%i:%s") AS createdAt, admin_name AS adminName, reason FROM fivem_admin_warnings WHERE citizenid=? ORDER BY id DESC LIMIT 100',{Player.PlayerData.citizenid}) or {}
  TriggerClientEvent('fadm:warningsResponse',src,rid,rows)
+end)
+
+
+local function getOnDutyAdmins()
+ local rows={}
+ for _,id in ipairs(GetPlayers()) do
+  local n=tonumber(id)
+  if n and hasAdminAce(n) and adminDuty[n]==true then
+   rows[#rows+1]={id=n,name=GetPlayerName(n) or ('ID '..n)}
+  end
+ end
+ table.sort(rows,function(a,b)return a.id<b.id end)
+ return rows
+end
+
+local function broadcastDutyRoster()
+ local roster=getOnDutyAdmins()
+ for _,id in ipairs(GetPlayers()) do
+  local n=tonumber(id)
+  if n and hasAdminAce(n) then TriggerClientEvent('fadm:dutyRoster',n,roster) end
+ end
+end
+
+RegisterNetEvent('fadm:requestDutyRoster',function()
+ local src=source;if not hasAdminAce(src) then return end
+ TriggerClientEvent('fadm:dutyRoster',src,getOnDutyAdmins())
+end)
+
+RegisterNetEvent('fadm:sendAnnouncement',function(kind,message)
+ local src=source;if not isAdmin(src) then return end
+ kind=tostring(kind or 'normal'):lower()
+ local allowed={normal=true,warning=true,emergency=true}
+ if not allowed[kind] then kind='normal' end
+ message=tostring(message or ''):gsub('^%s+',''):gsub('%s+$','')
+ if #message<2 then notify(src,'Enter an announcement message.') return end
+ if #message>500 then message=message:sub(1,500) end
+ local sender=GetPlayerName(src) or ('ID '..src)
+ TriggerClientEvent('fadm:announcement',-1,{kind=kind,message=message,sender=sender})
+ addAdminLog(src,nil,'Server Announcement',('Type: %s | %s'):format(kind,message))
+ notify(src,'Announcement sent to all players.')
 end)
