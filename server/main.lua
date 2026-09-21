@@ -782,3 +782,40 @@ RegisterNetEvent('fadm:teleportCoordsResponse', function(destination, mode, x, y
 
     TriggerClientEvent('fadm:teleportNow', destination, x, y, z, heading)
 end)
+
+RegisterNetEvent('fadm:manageMoney', function(target, account, operation, amount)
+    local src=source
+    if not isAdmin(src) then return end
+    target=tonumber(target); amount=math.floor(tonumber(amount) or 0)
+    account=tostring(account or ''):lower()
+    operation=tostring(operation or ''):lower()
+    if not target or not GetPlayerName(target) then notify(src,'Player is no longer online.') return end
+    if account~='cash' and account~='bank' then notify(src,'Invalid money account.') return end
+    if operation~='add' and operation~='remove' then notify(src,'Invalid money operation.') return end
+    if amount<1 or amount>10000000 then notify(src,'Amount must be between $1 and $10,000,000.') return end
+    local QBCore=exports['qb-core']:GetCoreObject()
+    local Player=QBCore.Functions.GetPlayer(target)
+    if not Player then notify(src,'Unable to load player data.') return end
+    if operation=='remove' then
+        local balance=tonumber(Player.PlayerData.money and Player.PlayerData.money[account]) or 0
+        if balance<amount then notify(src,('Player only has $%s in %s.'):format(balance,account)) return end
+        Player.Functions.RemoveMoney(account,amount,'fivem-admin')
+    else
+        Player.Functions.AddMoney(account,amount,'fivem-admin')
+    end
+    notify(src,('%s $%s %s %s.'):format(operation=='add' and 'Added' or 'Removed',amount,operation=='add' and 'to' or 'from',GetPlayerName(target)))
+    TriggerClientEvent('QBCore:Notify',target,('$%s was %s your %s by an administrator.'):format(amount,operation=='add' and 'added to' or 'removed from',account),operation=='add' and 'success' or 'primary')
+end)
+
+RegisterNetEvent('fadm:kickPlayer', function(target, reason)
+    local src=source
+    if not isAdmin(src) then return end
+    target=tonumber(target)
+    if not target or not GetPlayerName(target) then notify(src,'Player is no longer online.') return end
+    reason=tostring(reason or ''):gsub('^%s+',''):gsub('%s+$','')
+    if reason=='' then reason='Removed by an administrator.' end
+    if #reason>250 then reason=reason:sub(1,250) end
+    local targetName=GetPlayerName(target)
+    notify(src,('Kicked %s.'):format(targetName))
+    DropPlayer(target,reason)
+end)

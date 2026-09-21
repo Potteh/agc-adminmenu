@@ -263,3 +263,8 @@ Adds a Manage Player panel with QBCore identity, job, gang, money, live status, 
 ## v37 Manage Player fix
 Fixed Manage Player assuming `players` was always an array. The handler now
 normalizes the existing UI player-state shape before using Array.find().
+
+## v38 Player Management expansion
+Manage Player now includes Set Waypoint, Give Item, Set Job, Transfer Vehicle,
+Manage Money, and Kick. Money changes and kicks are server-side ACE validated.
+Existing item/job/vehicle-transfer interfaces are reused.

@@ -702,3 +702,12 @@ RegisterNUICallback('getPlayerLiveInfo',function(data,cb)
  if veh~=0 then vd={model=GetEntityModel(veh),plate=GetVehicleNumberPlateText(veh),engine=GetVehicleEngineHealth(veh),body=GetVehicleBodyHealth(veh),speed=GetEntitySpeed(veh)*2.236936} end
  cb({ok=true,health=GetEntityHealth(ped),maxHealth=GetEntityMaxHealth(ped),armor=GetPedArmour(ped),x=pos.x,y=pos.y,z=pos.z,heading=GetEntityHeading(ped),vehicle=vd})
 end)
+
+RegisterNUICallback('manageMoney',function(data,cb)
+ TriggerServerEvent('fadm:manageMoney',data.target,data.account,data.operation,data.amount)
+ cb({ok=true})
+end)
+RegisterNUICallback('kickPlayer',function(data,cb)
+ TriggerServerEvent('fadm:kickPlayer',data.target,data.reason)
+ cb({ok=true})
+end)

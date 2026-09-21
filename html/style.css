@@ -46,3 +46,7 @@
 }
 
 .player-info-modal{width:min(900px,92vw);max-height:86vh;overflow-y:auto}.player-info-body{display:flex;flex-direction:column;gap:14px;margin-top:12px}.pi-section{padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025)}.pi-section h3{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;opacity:.78}.pi-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pi-stat{padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);min-width:0}.pi-stat span{display:block;font-size:11px;opacity:.6;margin-bottom:4px}.pi-stat b{display:block;font-size:13px;overflow-wrap:anywhere}.pi-actions{display:flex;gap:8px;flex-wrap:wrap}.pi-note{font-size:12px;opacity:.7;padding:8px 0}@media(max-width:700px){.pi-grid{grid-template-columns:1fr}}
+
+#moneyModal label,#kickModal label{display:flex;flex-direction:column;gap:7px;margin:12px 0;font-size:12px;opacity:.9}
+#moneyModal input,#moneyModal select,#kickModal textarea{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:inherit}
+#kickModal textarea{min-height:90px;resize:vertical}

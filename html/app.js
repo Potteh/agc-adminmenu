@@ -273,8 +273,60 @@ async function renderPlayerInfo(p){
  selectedPlayerInfo=p;document.querySelector('#piTitle').textContent=`${p.characterName||p.name} (#${p.id})`;
  let live={ok:false};try{live=await(await post('getPlayerLiveInfo',{id:p.id})).json()}catch(e){}
  let liveHtml=live.ok?`<div class="pi-grid"><div class="pi-stat"><span>Health</span><b>${live.health} / ${live.maxHealth}</b></div><div class="pi-stat"><span>Armor</span><b>${live.armor}</b></div><div class="pi-stat"><span>Heading</span><b>${Number(live.heading).toFixed(1)}</b></div><div class="pi-stat"><span>Coordinates</span><b>${Number(live.x).toFixed(2)}, ${Number(live.y).toFixed(2)}, ${Number(live.z).toFixed(2)}</b></div></div>${live.vehicle?`<div class="pi-section"><h3>Current Vehicle</h3><div class="pi-grid"><div class="pi-stat"><span>Plate</span><b>${esc(live.vehicle.plate)}</b></div><div class="pi-stat"><span>Model Hash</span><b>${live.vehicle.model}</b></div><div class="pi-stat"><span>Engine</span><b>${Math.round(live.vehicle.engine)}</b></div><div class="pi-stat"><span>Speed</span><b>${Number(live.vehicle.speed).toFixed(1)} MPH</b></div></div></div>`:''}`:`<div class="pi-note">${esc(live.message||'Live data unavailable.')}</div>`;
- document.querySelector('#piBody').innerHTML=`<div class="pi-section"><h3>Identity</h3><div class="pi-grid"><div class="pi-stat"><span>Character</span><b>${esc(p.characterName||'Unknown')}</b></div><div class="pi-stat"><span>FiveM / Rockstar</span><b>${esc(p.rockstarName||p.name)}</b></div><div class="pi-stat"><span>Server ID</span><b>#${p.id}</b></div><div class="pi-stat"><span>Citizen ID</span><b>${esc(p.citizenid||'N/A')}</b></div></div></div><div class="pi-section"><h3>QBCore</h3><div class="pi-grid"><div class="pi-stat"><span>Job</span><b>${esc(p.jobLabel||p.jobName||'Unemployed')}</b></div><div class="pi-stat"><span>Grade</span><b>${esc(String(p.jobGradeName||p.jobGrade||0))} (${p.jobGrade||0})</b></div><div class="pi-stat"><span>Gang</span><b>${esc(p.gang||'None')}</b></div><div class="pi-stat"><span>Cash</span><b>${fmtMoney(p.cash)}</b></div><div class="pi-stat"><span>Bank</span><b>${fmtMoney(p.bank)}</b></div></div></div><div class="pi-section"><h3>Live Status</h3>${liveHtml}</div><div class="pi-section"><h3>Quick Actions</h3><div class="pi-actions"><button data-pi-act="goto">Go To</button><button data-pi-act="bring">Bring</button><button data-pi-act="spectate">Spectate</button><button data-pi-act="freeze">Freeze</button><button data-pi-act="unfreeze">Unfreeze</button><button data-pi-act="revive">Revive</button><button data-pi-act="heal">Heal</button><button data-pi-act="ragdoll">Ragdoll</button><button class="soft-danger" data-pi-act="kill">Kill</button></div></div>`;
+ document.querySelector('#piBody').innerHTML=`<div class="pi-section"><h3>Identity</h3><div class="pi-grid"><div class="pi-stat"><span>Character</span><b>${esc(p.characterName||'Unknown')}</b></div><div class="pi-stat"><span>FiveM / Rockstar</span><b>${esc(p.rockstarName||p.name)}</b></div><div class="pi-stat"><span>Server ID</span><b>#${p.id}</b></div><div class="pi-stat"><span>Citizen ID</span><b>${esc(p.citizenid||'N/A')}</b></div></div></div><div class="pi-section"><h3>QBCore</h3><div class="pi-grid"><div class="pi-stat"><span>Job</span><b>${esc(p.jobLabel||p.jobName||'Unemployed')}</b></div><div class="pi-stat"><span>Grade</span><b>${esc(String(p.jobGradeName||p.jobGrade||0))} (${p.jobGrade||0})</b></div><div class="pi-stat"><span>Gang</span><b>${esc(p.gang||'None')}</b></div><div class="pi-stat"><span>Cash</span><b>${fmtMoney(p.cash)}</b></div><div class="pi-stat"><span>Bank</span><b>${fmtMoney(p.bank)}</b></div></div></div><div class="pi-section"><h3>Live Status</h3>${liveHtml}</div><div class="pi-section"><h3>Quick Actions</h3><div class="pi-actions"><button data-pi-act="goto">Go To</button><button data-pi-act="bring">Bring</button><button data-pi-act="spectate">Spectate</button><button data-pi-act="freeze">Freeze</button><button data-pi-act="unfreeze">Unfreeze</button><button data-pi-act="revive">Revive</button><button data-pi-act="heal">Heal</button><button data-pi-act="ragdoll">Ragdoll</button><button data-pi-extra="waypoint">Set Waypoint</button><button data-pi-extra="giveitem">Give Item</button><button data-pi-extra="setjob">Set Job</button><button data-pi-extra="transfer">Transfer Vehicle</button><button data-pi-extra="money">Manage Money</button><button class="soft-danger" data-pi-extra="kick">Kick</button><button class="soft-danger" data-pi-act="kill">Kill</button></div></div>`;
  document.querySelector('#playerInfoModal').classList.remove('hidden')
 }
 document.addEventListener('click',e=>{const m=e.target.closest('[data-player-info]');if(m){const source = Array.isArray(players) ? players : (Array.isArray(players?.players) ? players.players : (Array.isArray(state?.players) ? state.players : []));const p=source.find(x=>Number(x.id)===Number(m.dataset.id));if(p)renderPlayerInfo(p);else toast('Unable to find that player in the current player list.');return}const a=e.target.closest('[data-pi-act]');if(a&&selectedPlayerInfo){const act=a.dataset.piAct;if(act==='goto'||act==='bring')post('teleportAction',{action:act,target:selectedPlayerInfo.id});else post('action',{action:act,target:selectedPlayerInfo.id});toast(`${act} sent.`)}});
 document.querySelector('#piClose').onclick=closePlayerInfo;document.querySelector('#piDone').onclick=closePlayerInfo;document.querySelector('#piRefresh').onclick=()=>selectedPlayerInfo&&renderPlayerInfo(selectedPlayerInfo);
+
+let managementTarget=null;
+function hideManagementModal(id){document.querySelector(id).classList.add('hidden')}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-pi-extra]');
+ if(!b||!selectedPlayerInfo)return;
+ const p=selectedPlayerInfo, a=b.dataset.piExtra;
+ if(a==='waypoint'){post('waypointPlayer',{target:p.id});toast('Waypoint request sent.');return}
+ if(a==='giveitem'){
+   closePlayerInfo();
+   document.querySelector('#giveItemPlayer').textContent=`${p.characterName||p.name} (#${p.id})`;
+   document.querySelector('#giveItemTarget').value=p.id;
+   document.querySelector('#giveItemModal').classList.remove('hidden');return
+ }
+ if(a==='setjob'){
+   closePlayerInfo();
+   document.querySelector('#jobPlayer').textContent=`${p.characterName||p.name} (#${p.id})`;
+   document.querySelector('#jobTarget').value=p.id;
+   document.querySelector('#jobModal').classList.remove('hidden');return
+ }
+ if(a==='transfer'){
+   closePlayerInfo();
+   document.querySelector('#transferVehicleTarget').value=p.id;
+   document.querySelector('#transferVehicleName').textContent=p.characterName||p.name;
+   document.querySelector('#transferVehicleModal').classList.remove('hidden');return
+ }
+ if(a==='money'){
+   managementTarget=p;document.querySelector('#moneyAmount').value='';
+   document.querySelector('#moneyModal').classList.remove('hidden');return
+ }
+ if(a==='kick'){
+   managementTarget=p;document.querySelector('#kickReason').value='';
+   document.querySelector('#kickModal').classList.remove('hidden');return
+ }
+});
+document.querySelector('#moneyClose').onclick=()=>hideManagementModal('#moneyModal');
+document.querySelector('#moneyCancel').onclick=()=>hideManagementModal('#moneyModal');
+document.querySelector('#moneySubmit').onclick=async()=>{
+ if(!managementTarget)return;
+ const amount=Number(document.querySelector('#moneyAmount').value);
+ if(!Number.isFinite(amount)||amount<1){toast('Enter a valid amount.');return}
+ await post('manageMoney',{target:managementTarget.id,account:document.querySelector('#moneyAccount').value,operation:document.querySelector('#moneyOperation').value,amount});
+ hideManagementModal('#moneyModal');toast('Money action sent.');
+};
+document.querySelector('#kickClose').onclick=()=>hideManagementModal('#kickModal');
+document.querySelector('#kickCancel').onclick=()=>hideManagementModal('#kickModal');
+document.querySelector('#kickSubmit').onclick=async()=>{
+ if(!managementTarget)return;
+ const reason=document.querySelector('#kickReason').value.trim()||'Removed by an administrator.';
+ await post('kickPlayer',{target:managementTarget.id,reason});
+ hideManagementModal('#kickModal');closePlayerInfo();toast('Kick sent.');
+};
