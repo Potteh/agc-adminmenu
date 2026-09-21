@@ -465,3 +465,14 @@ Manage Player has been reorganized into Movement & Observation, Player State,
 Character & Economy, Vehicles, and Moderation groups. Identity/QBCore information
 uses a cleaner two-column overview on larger displays. No server-side behavior,
 permissions, report logic, or the working v67 Entity Debugger raycast was changed.
+
+## v69 UI cleanup correction
+Restored Manage Player actions that were unintentionally omitted by the v68
+visual cleanup: Remove Clothes, Restore Clothes, Wild Dogs, Set Fire, Explode
+Vehicle, and Ban. Existing newer management actions remain available.
+
+The Players page now isolates scrolling to the player-results list. The player
+name/server-ID search toolbar remains fixed at the top instead of scrolling with
+the player management results.
+
+The working v67 Entity Debugger raycast and server-side behavior remain unchanged.

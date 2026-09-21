@@ -97,5 +97,11 @@ body.admin-off-duty #dashboard .stat,body.admin-off-duty #dashboard .quick-grid 
 .action-group .pi-actions button{min-height:38px}
 .danger-group{margin-top:3px}
 .danger-group .action-group-title{color:#c98289}
-#players .toolbar{position:sticky;top:-22px;z-index:5;padding:0 0 12px;background:#0b0f15}
+
 @media(max-width:900px){.pi-overview{grid-template-columns:1fr}.action-group .pi-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* v69 Players page scroll isolation */
+#players.active{height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#players .toolbar{position:relative;top:auto;z-index:6;flex:0 0 auto;padding:0 0 12px;background:#0b0f15}
+#playersList{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;padding-bottom:40px}
+.workspace main:has(#players.active){overflow:hidden !important}
