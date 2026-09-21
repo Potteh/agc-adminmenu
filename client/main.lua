@@ -666,19 +666,74 @@ local function fadmRotDir(r)
  return vector3(-math.sin(rz)*cx,math.cos(rz)*cx,math.sin(rx))
 end
 RegisterNUICallback('inspectEntity',function(_,cb)
- local cam=GetGameplayCamCoord();local dest=cam+fadmRotDir(GetGameplayCamRot(2))*40.0
+ local cam=GetGameplayCamCoord()
+ local dest=cam+fadmRotDir(GetGameplayCamRot(2))*40.0
  local ray=StartShapeTestRay(cam.x,cam.y,cam.z,dest.x,dest.y,dest.z,-1,PlayerPedId(),7)
- local _,hit,endPos,_,entity=GetShapeTestResult(ray)
- if hit~=1 or entity==0 then cb({ok=false,message='No entity found in front of you.'}) return end
- local pos=GetEntityCoords(entity);local t=GetEntityType(entity);local netId=NetworkGetNetworkIdFromEntity(entity)
- local owner=-1;if NetworkGetEntityIsNetworked(entity) then local op=NetworkGetEntityOwner(entity);if op and op>=0 then owner=GetPlayerServerId(op) end end
- local data={ok=true,type=t==1 and 'Ped' or t==2 and 'Vehicle' or t==3 and 'Object' or 'Unknown',entity=entity,networkId=netId,networked=NetworkGetEntityIsNetworked(entity),owner=owner,model=GetEntityModel(entity),x=pos.x,y=pos.y,z=pos.z,heading=GetEntityHeading(entity),health=GetEntityHealth(entity),maxHealth=GetEntityMaxHealth(entity),distance=#(cam-pos),visible=IsEntityVisible(entity),collision=not IsEntityPositionFrozen(entity)}
- if t==1 then
-  data.isPlayer=IsPedAPlayer(entity);data.dead=IsEntityDead(entity);data.armor=GetPedArmour(entity)
-  if data.isPlayer then local pi=NetworkGetPlayerIndexFromPed(entity);if pi and pi>=0 then data.playerServerId=GetPlayerServerId(pi);data.playerName=GetPlayerName(pi) end end
- elseif t==2 then
-  data.plate=GetVehicleNumberPlateText(entity);data.engine=GetVehicleEngineHealth(entity);data.body=GetVehicleBodyHealth(entity);data.tank=GetVehiclePetrolTankHealth(entity);data.fuel=GetVehicleFuelLevel(entity);data.dirt=GetVehicleDirtLevel(entity);data.speed=GetEntitySpeed(entity)*2.236936;data.lock=GetVehicleDoorLockStatus(entity);data.driver=GetPedInVehicleSeat(entity,-1)~=0
+ local _,hit,_,_,entity=GetShapeTestResult(ray)
+
+ if hit~=1 or not entity or entity==0 or not DoesEntityExist(entity) then
+  cb({ok=false,message='No entity found in front of you.'})
+  return
  end
+
+ -- Important: many local map objects/peds/vehicles are not networked.
+ -- Never call network natives unless this entity actually has a net object.
+ local isNetworked=false
+ local netId=0
+ local owner=-1
+ local okNet,netState=pcall(NetworkGetEntityIsNetworked,entity)
+ if okNet and netState then
+  isNetworked=true
+  local okId,id=pcall(NetworkGetNetworkIdFromEntity,entity)
+  if okId and id then netId=id end
+  local okOwner,ownerPlayer=pcall(NetworkGetEntityOwner,entity)
+  if okOwner and ownerPlayer and ownerPlayer>=0 then
+   local okSid,sid=pcall(GetPlayerServerId,ownerPlayer)
+   if okSid and sid then owner=sid end
+  end
+ end
+
+ local pos=GetEntityCoords(entity)
+ local t=GetEntityType(entity)
+ local data={
+  ok=true,
+  type=t==1 and 'Ped' or t==2 and 'Vehicle' or t==3 and 'Object' or 'Unknown',
+  entity=entity,
+  networkId=netId,
+  networked=isNetworked,
+  owner=owner,
+  model=GetEntityModel(entity),
+  x=pos.x,y=pos.y,z=pos.z,
+  heading=GetEntityHeading(entity),
+  health=GetEntityHealth(entity),
+  maxHealth=GetEntityMaxHealth(entity),
+  distance=#(cam-pos),
+  visible=IsEntityVisible(entity)
+ }
+
+ if t==1 then
+  data.isPlayer=IsPedAPlayer(entity)
+  data.dead=IsEntityDead(entity)
+  data.armor=GetPedArmour(entity)
+  if data.isPlayer then
+   local pi=NetworkGetPlayerIndexFromPed(entity)
+   if pi and pi>=0 then
+    data.playerServerId=GetPlayerServerId(pi)
+    data.playerName=GetPlayerName(pi)
+   end
+  end
+ elseif t==2 then
+  data.plate=GetVehicleNumberPlateText(entity)
+  data.engine=GetVehicleEngineHealth(entity)
+  data.body=GetVehicleBodyHealth(entity)
+  data.tank=GetVehiclePetrolTankHealth(entity)
+  data.fuel=GetVehicleFuelLevel(entity)
+  data.dirt=GetVehicleDirtLevel(entity)
+  data.speed=GetEntitySpeed(entity)*2.236936
+  data.lock=GetVehicleDoorLockStatus(entity)
+  data.driver=GetPedInVehicleSeat(entity,-1)~=0
+ end
+
  cb(data)
 end)
 

@@ -437,3 +437,9 @@ distance, coordinates, heading, health/max health and visibility. Vehicles add
 plate, speed, engine/body/tank health, fuel, dirt, lock status and driver
 presence. Peds add player/dead/armor data and, for player peds, the FiveM name
 and server ID. Copy Details copies the current inspection as plain text.
+
+## v65 Entity Debugger crash fix
+Fixed Entity Debugger v2 failing on local/non-networked entities. Network natives
+are now called only when the inspected entity is actually networked and are
+additionally protected with pcall. Local map objects now return Networked: No,
+Network ID: 0, and Owner: N/A instead of crashing the NUI callback.
