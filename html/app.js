@@ -346,21 +346,31 @@ document.addEventListener('click',e=>{
  const p=selectedPlayerInfo, a=b.dataset.piExtra;
  if(a==='waypoint'){post('waypointPlayer',{target:p.id});toast('Waypoint request sent.');return}
  if(a==='giveitem'){
+   giveItemTarget=Number(p.id);
+   $('#giveItemPlayer').textContent=`${p.characterName||p.name||'Player'} (#${giveItemTarget})`;
+   $('#giveItemName').value='';
+   $('#giveItemAmount').value='1';
    closePlayerInfo();
-   const existing=document.querySelector(`[data-give-item][data-id="${p.id}"]`);
-   if(existing) existing.click(); else toast('Give Item action is unavailable.');
+   $('#giveItemModal').classList.remove('hidden');
+   setTimeout(()=>$('#giveItemName')?.focus(),0);
    return
  }
  if(a==='setjob'){
+   jobTarget=Number(p.id);
+   $('#jobPlayer').textContent=`${p.characterName||p.name||'Player'} (#${jobTarget})`;
+   $('#jobSearch').value='';
    closePlayerInfo();
-   const existing=document.querySelector(`[data-set-job][data-id="${p.id}"]`);
-   if(existing) existing.click(); else toast('Set Job action is unavailable.');
+   $('#jobModal').classList.remove('hidden');
+   post('getJobCatalog',{});
    return
  }
  if(a==='transfer'){
+   pending={transferVehicle:true,target:Number(p.id),name:p.characterName||p.name||'this player'};
    closePlayerInfo();
-   const existing=document.querySelector(`[data-transfer-vehicle][data-id="${p.id}"]`);
-   if(existing) existing.click(); else toast('Transfer Vehicle action is unavailable.');
+   $('#confirmTitle').textContent='Transfer vehicle?';
+   $('#confirmText').textContent=`Transfer the vehicle you are currently sitting in to ${pending.name}? Ownership will move to that player.`;
+   $('#reasonWrap').classList.add('hidden');
+   $('#confirm').classList.remove('hidden');
    return
  }
  if(a==='vehicles'){

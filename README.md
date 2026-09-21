@@ -509,3 +509,10 @@ Corrected the admin integration to call the resource by its actual running folde
 name, `agc-carradio`. The uploaded ZIP contains an internal source folder named
 `acg_radio`, but FiveM export/resource lookups use the running resource folder
 name. The user's server resource is `agc-carradio`.
+
+## v74 Manage Player action fix
+Fixed Give Item, Set Job, and Transfer Vehicle from the cleaned-up Manage Player
+screen. The v68 UI cleanup removed the old per-player card action buttons, but
+these three Manage Player actions were still trying to find and click those
+deleted buttons. They now open their existing modals/confirmation flow directly
+for the selected player. No server-side action logic was changed.
