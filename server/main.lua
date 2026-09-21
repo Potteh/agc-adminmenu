@@ -887,13 +887,47 @@ RegisterNetEvent('fadm:setVehicleGarage', function(target, plate, garage)
 end)
 
 local adminLogs={}
-do local raw=LoadResourceFile(GetCurrentResourceName(),Config.AdminLogFile or 'admin_logs.json');if raw and raw~='' then local ok,d=pcall(json.decode,raw);if ok and type(d)=='table' then adminLogs=d end end end
-local function saveAdminLogs() SaveResourceFile(GetCurrentResourceName(),Config.AdminLogFile or 'admin_logs.json',json.encode(adminLogs),-1) end
-addAdminLog=function(adminSrc,target,action,details)
- local tid=tonumber(target);table.insert(adminLogs,1,{time=os.date('%Y-%m-%d %H:%M:%S'),adminName=adminSrc==0 and 'Console' or (GetPlayerName(adminSrc) or ('ID '..adminSrc)),targetName=(tid and GetPlayerName(tid)) or (tid and ('ID '..tid)) or 'Server',action=tostring(action or 'Unknown'),details=tostring(details or '')})
- while #adminLogs>(tonumber(Config.MaxAdminLogs) or 1000) do table.remove(adminLogs) end;saveAdminLogs()
+local adminLogsReady=false
+
+CreateThread(function()
+ MySQL.query.await([[
+  CREATE TABLE IF NOT EXISTS fivem_admin_logs (
+   id INT NOT NULL AUTO_INCREMENT,
+   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   admin_id INT NULL,
+   admin_name VARCHAR(100) NOT NULL,
+   target_id INT NULL,
+   target_name VARCHAR(100) NOT NULL,
+   action VARCHAR(100) NOT NULL,
+   details TEXT NULL,
+   PRIMARY KEY (id),
+   INDEX idx_created_at (created_at),
+   INDEX idx_action (action)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+ ]])
+ adminLogsReady=true
+end)
+
+local function fetchAdminLogs()
+ if not adminLogsReady then return {} end
+ local max=math.max(1,math.min(tonumber(Config.MaxAdminLogs) or 1000,5000))
+ return MySQL.query.await(('SELECT id, DATE_FORMAT(created_at, "%%Y-%%m-%%d %%H:%%i:%%s") AS time, admin_id AS adminId, admin_name AS adminName, target_id AS targetId, target_name AS targetName, action, details FROM fivem_admin_logs ORDER BY id DESC LIMIT %d'):format(max)) or {}
 end
-RegisterNetEvent('fadm:requestAdminLogs',function() local src=source;if not isAdmin(src) then return end;TriggerClientEvent('fadm:adminLogsResponse',src,adminLogs) end)
+
+addAdminLog=function(adminSrc,target,action,details)
+ local tid=tonumber(target)
+ local adminName=adminSrc==0 and 'Console' or (GetPlayerName(adminSrc) or ('ID '..adminSrc))
+ local targetName=(tid and GetPlayerName(tid)) or (tid and ('ID '..tid)) or 'Server'
+ MySQL.insert.await('INSERT INTO fivem_admin_logs (admin_id,admin_name,target_id,target_name,action,details) VALUES (?,?,?,?,?,?)',{
+  tonumber(adminSrc),adminName,tid,targetName,tostring(action or 'Unknown'),tostring(details or '')
+ })
+end
+
+RegisterNetEvent('fadm:requestAdminLogs',function()
+ local src=source
+ if not isAdmin(src) then return end
+ TriggerClientEvent('fadm:adminLogsResponse',src,fetchAdminLogs())
+end)
 
 RegisterNetEvent('fadm:recordAdminAction',function(target,action,details)
  local src=source

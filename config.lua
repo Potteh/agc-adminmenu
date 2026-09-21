@@ -27,5 +27,4 @@ Config.RestartUseQuitCommand = false
 
 Config.AdminWorldSyncIntervalMs = 2000
 
-Config.AdminLogFile = 'admin_logs.json'
 Config.MaxAdminLogs = 1000

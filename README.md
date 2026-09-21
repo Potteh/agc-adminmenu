@@ -322,3 +322,10 @@ Removed the browser-native confirm() call from Delete Vehicle. FiveM NUI can
 hang/freeze on synchronous browser dialogs. Delete Vehicle now uses the admin
 menu's own asynchronous confirmation modal before sending the existing
 server-validated vehicle delete action.
+
+## v49 Persistent Database Admin Logs
+Admin logs now persist in MySQL instead of admin_logs.json. The resource
+automatically creates `fivem_admin_logs` through oxmysql and loads the latest
+entries directly from the database whenever Admin Logs is refreshed. This fixes
+logs disappearing after reconnects/resource or server restarts and avoids
+deployment updates overwriting the JSON audit file.
