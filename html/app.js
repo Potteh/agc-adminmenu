@@ -425,3 +425,31 @@ document.addEventListener('click', e => {
  }
  if(action) post('auditAction',{target:null,action,details:''}).catch(()=>{});
 });
+
+// v45: authoritative UI audit hooks for the actual World Controls elements.
+// These run alongside the established world handlers and only record the action.
+(() => {
+ const audit=(action,details='')=>post('auditAction',{target:null,action,details}).catch(()=>{});
+
+ const day=document.querySelector('#setDay');
+ if(day) day.addEventListener('click',()=>audit('Set Day','Time preset: day'));
+
+ const night=document.querySelector('#setNight');
+ if(night) night.addEventListener('click',()=>audit('Set Night','Time preset: night'));
+
+ const weather=document.querySelector('#weatherSelect');
+ if(weather) weather.addEventListener('change',()=>audit('Set Weather',`Weather: ${weather.value}`));
+
+ // Some builds apply weather with a separate button.
+ const weatherApply=document.querySelector('#applyWeather');
+ if(weatherApply) weatherApply.addEventListener('click',()=>{
+   const w=document.querySelector('#weatherSelect');
+   audit('Set Weather',`Weather: ${w?.value||'unknown'}`);
+ });
+
+ const quake=document.querySelector('#earthquake');
+ if(quake) quake.addEventListener('click',()=>audit('Earthquake','Triggered server-wide earthquake'));
+
+ const restart=document.querySelector('#restartSequence');
+ if(restart) restart.addEventListener('click',()=>audit('Restart Sequence','Triggered restart warning sequence'));
+})();

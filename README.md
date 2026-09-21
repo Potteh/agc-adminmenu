@@ -300,3 +300,8 @@ actions are sent through an ACE-protected server audit endpoint.
 Adds Admin Logs to the page-title metadata and makes go(tab) defensive. Unknown
 or future tabs now receive a safe fallback title instead of throwing
 "Cannot read properties of undefined (reading '0')".
+
+## v45 World Control Audit Fix
+Adds direct audit hooks for the actual World Controls UI selectors so Day/Night,
+weather selection/apply, earthquake, and restart controls can be recorded in
+Admin Logs instead of relying only on the generic v43 button-ID matcher.
