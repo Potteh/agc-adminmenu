@@ -711,3 +711,28 @@ RegisterNUICallback('kickPlayer',function(data,cb)
  TriggerServerEvent('fadm:kickPlayer',data.target,data.reason)
  cb({ok=true})
 end)
+
+local fadmFreshInfoRequests={}
+local fadmFreshInfoCounter=0
+
+RegisterNUICallback('getFreshPlayerInfo',function(data,cb)
+ fadmFreshInfoCounter=fadmFreshInfoCounter+1
+ local requestId=tostring(GetGameTimer())..':'..tostring(fadmFreshInfoCounter)
+ fadmFreshInfoRequests[requestId]=cb
+ TriggerServerEvent('fadm:requestFreshPlayerInfo',data.id,requestId)
+ SetTimeout(3000,function()
+  if fadmFreshInfoRequests[requestId] then
+   fadmFreshInfoRequests[requestId]({ok=false,message='Timed out refreshing server player data.'})
+   fadmFreshInfoRequests[requestId]=nil
+  end
+ end)
+end)
+
+RegisterNetEvent('fadm:freshPlayerInfo',function(requestId,data)
+ local cb=fadmFreshInfoRequests[tostring(requestId)]
+ if not cb then return end
+ fadmFreshInfoRequests[tostring(requestId)]=nil
+ if not data then cb({ok=false,message='Unable to refresh player data.'}) return end
+ data.ok=true
+ cb(data)
+end)

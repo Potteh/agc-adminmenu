@@ -819,3 +819,34 @@ RegisterNetEvent('fadm:kickPlayer', function(target, reason)
     notify(src,('Kicked %s.'):format(targetName))
     DropPlayer(target,reason)
 end)
+
+RegisterNetEvent('fadm:requestFreshPlayerInfo', function(target, requestId)
+    local src=source
+    if not isAdmin(src) then return end
+    target=tonumber(target)
+    if not target or not GetPlayerName(target) then
+        TriggerClientEvent('fadm:freshPlayerInfo',src,requestId,nil)
+        return
+    end
+    local QBCore=exports['qb-core']:GetCoreObject()
+    local Player=QBCore.Functions.GetPlayer(target)
+    if not Player then
+        TriggerClientEvent('fadm:freshPlayerInfo',src,requestId,nil)
+        return
+    end
+    local pd=Player.PlayerData or {}
+    local job=pd.job or {}
+    local grade=job.grade or {}
+    local money=pd.money or {}
+    TriggerClientEvent('fadm:freshPlayerInfo',src,requestId,{
+        id=target,
+        citizenid=pd.citizenid or 'N/A',
+        jobName=job.name or 'unemployed',
+        jobLabel=job.label or job.name or 'Unemployed',
+        jobGrade=tonumber(grade.level or grade) or 0,
+        jobGradeName=grade.name or '',
+        gang=(pd.gang and (pd.gang.label or pd.gang.name)) or 'None',
+        cash=tonumber(money.cash) or 0,
+        bank=tonumber(money.bank) or 0
+    })
+end)

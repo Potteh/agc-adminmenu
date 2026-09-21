@@ -274,3 +274,8 @@ Fixed Give Item / Set Job / Transfer Vehicle using guessed modal field IDs. Thes
 buttons now invoke the already-tested player-card actions. Manage Money and Kick
 now close the Player Management overlay before opening their own modal, preventing
 hidden modal stacking.
+
+## v40 Fresh Player Info
+Refresh Live Info now requests current QBCore PlayerData from the server as well
+as live ped/vehicle data. Cash, bank, job, grade, gang, and Citizen ID therefore
+refresh immediately after administrative changes such as Give/Remove Money.
