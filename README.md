@@ -503,3 +503,9 @@ radio or all active radios. The integration remains optional; the admin menu
 continues to function if `agc_radio` is stopped or absent.
 
 Built from the confirmed-working v71 admin-menu baseline.
+
+## v73 radio resource-name correction
+Corrected the admin integration to call the resource by its actual running folder
+name, `agc-carradio`. The uploaded ZIP contains an internal source folder named
+`acg_radio`, but FiveM export/resource lookups use the running resource folder
+name. The user's server resource is `agc-carradio`.

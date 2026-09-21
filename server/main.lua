@@ -1068,7 +1068,7 @@ end)
 
 
 local function radioResourceReady()
- return GetResourceState('acg_radio') == 'started'
+ return GetResourceState('agc-carradio') == 'started'
 end
 
 local function getRadioOccupants(netId)
@@ -1097,7 +1097,7 @@ end
 
 local function buildAdminRadioList()
  if not radioResourceReady() then return {available=false,radios={}} end
- local ok,radios=pcall(function() return exports['acg_radio']:GetActiveRadios() end)
+ local ok,radios=pcall(function() return exports['agc-carradio']:GetActiveRadios() end)
  if not ok or type(radios)~='table' then return {available=false,radios={}} end
  for _,radio in ipairs(radios) do radio.occupants=getRadioOccupants(radio.netId) end
  return {available=true,radios=radios}
@@ -1114,7 +1114,7 @@ RegisterNetEvent('fadm:stopActiveRadio',function(netId)
  if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required.') return end
  netId=tonumber(netId)
  if not netId or netId<=0 or not radioResourceReady() then notify(src,'Radio resource is unavailable.') return end
- local ok,stopped=pcall(function() return exports['acg_radio']:StopVehicleRadio(netId) end)
+ local ok,stopped=pcall(function() return exports['agc-carradio']:StopVehicleRadio(netId) end)
  if not ok or not stopped then notify(src,'No active radio found for that vehicle.') return end
  addAdminLog(src,nil,'Stop Vehicle Radio',('Network ID %d'):format(netId))
  notify(src,'Vehicle radio stopped.')
@@ -1125,7 +1125,7 @@ RegisterNetEvent('fadm:stopAllActiveRadios',function()
  local src=source
  if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required.') return end
  if not radioResourceReady() then notify(src,'Radio resource is unavailable.') return end
- local ok,count=pcall(function() return exports['acg_radio']:StopAllRadios() end)
+ local ok,count=pcall(function() return exports['agc-carradio']:StopAllRadios() end)
  if not ok then notify(src,'Could not stop active radios.') return end
  addAdminLog(src,nil,'Stop All Radios',('Stopped %d active radio(s)'):format(tonumber(count) or 0))
  notify(src,('Stopped %d active radio(s).'):format(tonumber(count) or 0))
