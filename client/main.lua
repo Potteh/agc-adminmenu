@@ -766,3 +766,41 @@ RegisterNUICallback('auditAction', function(data, cb)
     TriggerServerEvent('fadm:recordAdminAction', data.target, data.action, data.details)
     cb({ok=true})
 end)
+
+RegisterNetEvent('fadm:vehicleManageClient',function(action)
+ local ped=PlayerPedId()
+ local veh=GetVehiclePedIsIn(ped,false)
+ if veh==0 then
+  TriggerEvent('QBCore:Notify','You must be inside a vehicle for this admin vehicle action.','error')
+  return
+ end
+ if action=='repair' then
+  SetVehicleFixed(veh);SetVehicleDeformationFixed(veh);SetVehicleEngineHealth(veh,1000.0);SetVehicleBodyHealth(veh,1000.0)
+ elseif action=='clean' then
+  SetVehicleDirtLevel(veh,0.0);WashDecalsFromVehicle(veh,1.0)
+ elseif action=='refuel' then
+  SetVehicleFuelLevel(veh,100.0)
+  pcall(function() exports['qb-fuel']:SetFuel(veh,100.0) end)
+ elseif action=='flip' then
+  local h=GetEntityHeading(veh);SetEntityRotation(veh,0.0,0.0,h,2,true);SetVehicleOnGroundProperly(veh)
+ elseif action=='unlock' then
+  SetVehicleDoorsLocked(veh,1);SetVehicleDoorsLockedForAllPlayers(veh,false)
+ elseif action=='delete' then
+  NetworkRequestControlOfEntity(veh)
+  local untilTime=GetGameTimer()+1500
+  while not NetworkHasControlOfEntity(veh) and GetGameTimer()<untilTime do Wait(0);NetworkRequestControlOfEntity(veh) end
+  SetEntityAsMissionEntity(veh,true,true);DeleteVehicle(veh)
+ elseif action=='maxmods' then
+  SetVehicleModKit(veh,0)
+  for modType=0,49 do
+   local count=GetNumVehicleMods(veh,modType)
+   if count>0 then SetVehicleMod(veh,modType,count-1,false) end
+  end
+  ToggleVehicleMod(veh,18,true);ToggleVehicleMod(veh,20,true);ToggleVehicleMod(veh,22,true)
+ end
+end)
+
+RegisterNUICallback('vehicleManage',function(data,cb)
+ TriggerServerEvent('fadm:vehicleManage',data.target,data.action)
+ cb({ok=true})
+end)

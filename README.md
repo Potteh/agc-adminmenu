@@ -310,3 +310,9 @@ Admin Logs instead of relying only on the generic v43 button-ID matcher.
 Corrected World Controls logging against the actual markup:
 data-world=time with values 12/0 for Day/Night, and #weatherPreset for the selected
 weather. Also logs Dynamic Weather and Blackout toggles.
+
+## v47 Vehicle Management
+Manage Player now includes Vehicle Management for the vehicle the selected player
+is currently inside: Repair, Clean, Refuel, Flip Upright, Unlock, Max Mods, and
+Delete Vehicle. Requests are ACE-validated server-side and every vehicle action
+is written directly to the persistent Admin Logs.

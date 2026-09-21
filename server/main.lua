@@ -900,3 +900,16 @@ RegisterNetEvent('fadm:recordAdminAction',function(target,action,details)
  if not isAdmin(src) then return end
  addAdminLog(src,target,action,details)
 end)
+
+RegisterNetEvent('fadm:vehicleManage',function(target,action)
+ local src=source
+ if not isAdmin(src) then return end
+ target=tonumber(target);action=tostring(action or ''):lower()
+ local allowed={repair=true,clean=true,refuel=true,flip=true,unlock=true,delete=true,maxmods=true}
+ if not target or not GetPlayerName(target) then notify(src,'Player is no longer online.') return end
+ if not allowed[action] then notify(src,'Invalid vehicle action.') return end
+ local labels={repair='Repair Vehicle',clean='Clean Vehicle',refuel='Refuel Vehicle',flip='Flip Vehicle',unlock='Unlock Vehicle',delete='Delete Vehicle',maxmods='Max Vehicle Mods'}
+ addAdminLog(src,target,labels[action],('Current vehicle action: %s'):format(action))
+ TriggerClientEvent('fadm:vehicleManageClient',target,action)
+ notify(src,('%s sent to %s.'):format(labels[action],GetPlayerName(target)))
+end)
