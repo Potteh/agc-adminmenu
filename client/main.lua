@@ -669,12 +669,23 @@ RegisterNUICallback('inspectEntity',function(_,cb)
  local ped=PlayerPedId()
  local cam=GetGameplayCamCoord()
  local dir=fadmRotDir(GetGameplayCamRot(2))
- local dest=vector3(cam.x+(dir.x*40.0),cam.y+(dir.y*40.0),cam.z+(dir.z*40.0))
- local ray=StartShapeTestLosProbe(cam.x,cam.y,cam.z,dest.x,dest.y,dest.z,511,ped,7)
- local result,hit,endCoords,surfaceNormal,entity=GetShapeTestResult(ray)
+ local dest=vector3(cam.x+(dir.x*50.0),cam.y+(dir.y*50.0),cam.z+(dir.z*50.0))
 
- if result~=2 or hit~=1 or entity==0 or not DoesEntityExist(entity) then
-  cb({ok=false,message='No entity found in front of you.'})
+ -- StartShapeTestRay + option 7 was already proven to return entities in the
+ -- original debugger. Keep that working raycast, but avoid the unsafe network
+ -- natives that caused the v64/v65 callback crash.
+ local ray=StartShapeTestRay(cam.x,cam.y,cam.z,dest.x,dest.y,dest.z,-1,ped,7)
+
+ local hit,entity=0,0
+ local deadline=GetGameTimer()+250
+ repeat
+  local status,h,_,_,ent=GetShapeTestResult(ray)
+  if status==2 then hit=h;entity=ent or 0;break end
+  Wait(0)
+ until GetGameTimer()>deadline
+
+ if hit~=1 or entity==0 or not DoesEntityExist(entity) then
+  cb({ok=false,message='No entity found. Aim the center of the camera directly at a ped, vehicle, or object within 50m.'})
   return
  end
 
@@ -689,15 +700,9 @@ RegisterNUICallback('inspectEntity',function(_,cb)
   heading=GetEntityHeading(entity),
   health=GetEntityHealth(entity),
   distance=#(cam-pos),
-  visible=IsEntityVisible(entity),
-  networked=false,
-  networkId=0,
-  owner=-1
+  visible=IsEntityVisible(entity)
  }
 
- -- Network information is deliberately omitted here. Some locally-created or
- -- streamed entities can make FiveM's network lookup natives throw a native
- -- exception even after a network-state check.
  if entityType==1 then
   data.dead=IsEntityDead(entity)
   data.armor=GetPedArmour(entity)

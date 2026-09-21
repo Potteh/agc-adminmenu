@@ -450,3 +450,9 @@ native set. Network ID/owner lookup and other potentially unsafe lookup natives
 were removed from the inspection path because native exceptions cannot be caught
 reliably by Lua pcall once the game native itself faults. This version prioritizes
 a debugger that works reliably for local map objects, peds, and vehicles.
+
+## v67 Entity Debugger raycast correction
+Restored the original StartShapeTestRay approach that successfully detected
+entities, increased range to 50m, and now waits briefly for the asynchronous
+shape test to complete instead of assuming the result is immediately ready.
+The unsafe network lookup natives remain removed.

@@ -269,7 +269,7 @@ $('#inspectEntityBtn').onclick=async()=>{
  const d=await(await post('inspectEntity')).json();
  if(!d.ok){$('#entityDebug').textContent=d.message;lastEntityDebug='';return}
  const n=v=>Number(v||0).toFixed(2), yes=v=>v?'Yes':'No';
- const base=[`Type: ${d.type}`,`Entity Handle: ${d.entity}`,`Model Hash: ${d.model}`,`Network ID: Safe mode`, `Networked: Not queried`, `Network Owner Server ID: Not queried`,`Distance: ${n(d.distance)} m`,`Coords: ${n(d.x)}, ${n(d.y)}, ${n(d.z)}`,`Heading: ${n(d.heading)}`,`Health: ${d.health}`,`Visible: ${yes(d.visible)}`];
+ const base=[`Type: ${d.type}`,`Entity Handle: ${d.entity}`,`Model Hash: ${d.model}`,`Distance: ${n(d.distance)} m`,`Coords: ${n(d.x)}, ${n(d.y)}, ${n(d.z)}`,`Heading: ${n(d.heading)}`,`Health: ${d.health}`,`Visible: ${yes(d.visible)}`];
  if(d.type==='Vehicle')base.push(`Plate: ${String(d.plate||'').trim()||'N/A'}`,`Speed: ${n(d.speed)} mph`,`Engine Health: ${n(d.engine)}`,`Body Health: ${n(d.body)}`,`Fuel Tank Health: ${n(d.tank)}`,`Fuel Level: ${n(d.fuel)}%`,`Dirt Level: ${n(d.dirt)}`,`Door Lock Status: ${d.lock}`,`Driver Present: ${yes(d.driver)}`);
  if(d.type==='Ped')base.push(`Player Ped: ${yes(d.isPlayer)}`,`Dead: ${yes(d.dead)}`,`Armor: ${d.armor||0}`,...(d.isPlayer?[`Player: ${d.playerName||'Unknown'} (#${d.playerServerId||'?'})`]:[]));
  lastEntityDebug=base.join('\n');
