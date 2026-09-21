@@ -417,3 +417,15 @@ Moderator UI hides Admin-only destructive controls and Ban/Announcement access;
 the server-side v61 permission checks remain authoritative. The Staff page is
 visible only to Super Admins and its server endpoint independently requires
 Super Admin + on-duty authorization.
+
+## v63 Report System v2
+Reports and replies now persist in MySQL (`fivem_admin_reports` and
+`fivem_admin_report_replies`) and survive resource/server restarts. Existing
+pre-v63 in-memory reports cannot be migrated because they were never stored.
+
+Claims are enforced server-side: a report claimed by one staff member cannot
+be replied to or closed by another. Replying to an unclaimed report
+automatically claims it. Admin/Super Admin can use Take Over to transfer a
+claim. Claim/unclaim/takeover/close/reply actions are audit logged. Added a
+Claimed-only report filter. Reporter server IDs are retained for live reply
+delivery; if the reporter is offline, the reply remains in persistent history.

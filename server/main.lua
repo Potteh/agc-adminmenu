@@ -24,6 +24,35 @@ local function canAction(src,a)
     return true
 end
 
+
+local reportsReady=false
+local function hydrateReports()
+ if not reportsReady then return end
+ local rows=MySQL.query.await([[SELECT id,reporter_name AS reporter,reporter_server_id AS reporterId,target_server_id AS target,target_name AS targetName,message,DATE_FORMAT(created_at,'%Y-%m-%d %H:%i:%s') AS created,status,claimed_by_server_id AS claimedById,claimed_by_name AS claimedBy,DATE_FORMAT(claimed_at,'%Y-%m-%d %H:%i:%s') AS claimedAt,closed_by_name AS closedBy FROM fivem_admin_reports ORDER BY id ASC]]) or {}
+ for _,r in ipairs(rows) do
+  r.replies=MySQL.query.await([[SELECT admin_name AS admin,message,DATE_FORMAT(created_at,'%Y-%m-%d %H:%i:%s') AS created FROM fivem_admin_report_replies WHERE report_id=? ORDER BY id ASC]],{r.id}) or {}
+ end
+ reports=rows
+end
+local function findReport(id) for _,r in ipairs(reports) do if tonumber(r.id)==tonumber(id) then return r end end end
+local function reportOwnedBy(r,src) return not r.claimedById or tonumber(r.claimedById)==tonumber(src) end
+CreateThread(function()
+ MySQL.query.await([[CREATE TABLE IF NOT EXISTS fivem_admin_reports (
+  id INT NOT NULL AUTO_INCREMENT, reporter_name VARCHAR(100) NOT NULL, reporter_server_id INT NULL,
+  target_server_id INT NULL,target_name VARCHAR(100) NULL,message VARCHAR(500) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,status VARCHAR(20) NOT NULL DEFAULT 'open',
+  claimed_by_server_id INT NULL,claimed_by_name VARCHAR(100) NULL,claimed_at DATETIME NULL,
+  closed_by_server_id INT NULL,closed_by_name VARCHAR(100) NULL,closed_at DATETIME NULL,
+  PRIMARY KEY(id),INDEX idx_report_status(status),INDEX idx_report_created(created_at)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+ MySQL.query.await([[CREATE TABLE IF NOT EXISTS fivem_admin_report_replies (
+  id INT NOT NULL AUTO_INCREMENT,report_id INT NOT NULL,admin_server_id INT NULL,admin_name VARCHAR(100) NOT NULL,
+  message VARCHAR(500) NOT NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(id),INDEX idx_reply_report(report_id)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]])
+ reportsReady=true;hydrateReports()
+end)
+
 local function notify(src, msg)
     TriggerClientEvent('fadm:notify', src, msg)
 end
@@ -421,127 +450,43 @@ RegisterNetEvent('fadm:registerSpawnedVehicle', function(modelName, plate, props
     notify(src, ('Vehicle %s [%s] is now registered to you and can be stored in qb-garages.'):format(modelName, plate))
 end)
 
-RegisterNetEvent('fadm:submitReport', function(target, message)
-    local src = source
-    message = tostring(message or ''):gsub('^%s+', ''):gsub('%s+$', '')
-
-    if #message < 3 then
-        notify(src, 'Report is too short.')
-        return
-    end
-
-    if #message > Config.MaxReportLength then
-        message = message:sub(1, Config.MaxReportLength)
-    end
-
-    target = tonumber(target)
-    if target and not GetPlayerName(target) then
-        target = nil
-    end
-
-    local report = {
-        id = nextReportId,
-        reporter = GetPlayerName(src) or ('Player ' .. src),
-        reporterId = src,
-        target = target,
-        targetName = target and GetPlayerName(target) or 'None',
-        message = message,
-        created = os.date('%Y-%m-%d %H:%M:%S'),
-        status = 'open'
-    }
-
-    nextReportId = nextReportId + 1
-    reports[#reports + 1] = report
-
-    notify(src, ('Report #%d submitted.'):format(report.id))
-
-    for _, id in ipairs(GetPlayers()) do
-        local admin = tonumber(id)
-        if isAdmin(admin) then
-            TriggerClientEvent('fadm:newReport', admin, report)
-        end
-    end
+RegisterNetEvent('fadm:submitReport',function(target,message)
+ local src=source;message=tostring(message or ''):gsub('^%s+',''):gsub('%s+$','')
+ if #message<3 then notify(src,'Report is too short.');return end
+ if #message>Config.MaxReportLength then message=message:sub(1,Config.MaxReportLength) end
+ target=tonumber(target);if target and not GetPlayerName(target) then target=nil end
+ if not reportsReady then notify(src,'Report system is still starting.');return end
+ local reporter=GetPlayerName(src) or ('Player '..src);local targetName=target and GetPlayerName(target) or 'None'
+ local id=MySQL.insert.await('INSERT INTO fivem_admin_reports (reporter_name,reporter_server_id,target_server_id,target_name,message) VALUES (?,?,?,?,?)',{reporter,src,target,targetName,message})
+ hydrateReports();local report=findReport(id);notify(src,('Report #%d submitted.'):format(id))
+ for _,pid in ipairs(GetPlayers()) do local a=tonumber(pid);if isAdmin(a) then TriggerClientEvent('fadm:newReport',a,report) end end
 end)
 
-
-RegisterNetEvent('fadm:replyReport', function(reportId, message)
-    local src = source
-    if not isAdmin(src) then return end
-
-    reportId = tonumber(reportId)
-    message = tostring(message or ''):gsub('^%s+', ''):gsub('%s+$', '')
-
-    if not reportId or #message < 1 then
-        notify(src, 'Enter a reply message.')
-        return
-    end
-
-    if #message > 500 then
-        message = message:sub(1, 500)
-    end
-
-    local found = nil
-    for _, report in ipairs(reports) do
-        if report.id == reportId then
-            found = report
-            break
-        end
-    end
-
-    if not found then
-        notify(src, 'Report not found.')
-        return
-    end
-
-    found.replies = found.replies or {}
-    found.replies[#found.replies + 1] = {
-        admin = GetPlayerName(src) or 'Admin',
-        message = message,
-        created = os.date('%Y-%m-%d %H:%M:%S')
-    }
-
-    local reporterId = tonumber(found.reporterId)
-    if reporterId and GetPlayerName(reporterId) then
-        TriggerClientEvent('fadm:reportReply', reporterId, {
-            reportId = found.id,
-            admin = GetPlayerName(src) or 'Admin',
-            message = message
-        })
-        notify(src, ('Reply sent to %s for report #%d.'):format(GetPlayerName(reporterId), found.id))
-    else
-        notify(src, ('Reply saved, but the reporter for report #%d is offline.'):format(found.id))
-    end
-
-    -- Refresh all online admins so the reply appears immediately.
-    for _, id in ipairs(GetPlayers()) do
-        local admin = tonumber(id)
-        if isAdmin(admin) then
-            TriggerClientEvent('fadm:updateData', admin, {
-                players = playerList(),
-                reports = reports
-            })
-        end
-    end
+RegisterNetEvent('fadm:replyReport',function(reportId,message)
+ local src=source;if not isAdmin(src) then return end
+ reportId=tonumber(reportId);message=tostring(message or ''):gsub('^%s+',''):gsub('%s+$','')
+ if not reportId or #message<1 then notify(src,'Enter a reply message.');return end;if #message>500 then message=message:sub(1,500) end
+ local r=findReport(reportId);if not r then notify(src,'Report not found.');return end
+ if r.status~='open' then notify(src,'That report is closed.');return end
+ if not reportOwnedBy(r,src) then notify(src,('Report #%d is claimed by %s.'):format(reportId,r.claimedBy or 'another admin'));return end
+ if not r.claimedById then
+  MySQL.update.await('UPDATE fivem_admin_reports SET claimed_by_server_id=?,claimed_by_name=?,claimed_at=NOW() WHERE id=?',{src,GetPlayerName(src) or ('ID '..src),reportId})
+ end
+ MySQL.insert.await('INSERT INTO fivem_admin_report_replies (report_id,admin_server_id,admin_name,message) VALUES (?,?,?,?)',{reportId,src,GetPlayerName(src) or 'Admin',message})
+ hydrateReports();r=findReport(reportId)
+ local rid=tonumber(r.reporterId);if rid and GetPlayerName(rid) then TriggerClientEvent('fadm:reportReply',rid,{reportId=r.id,admin=GetPlayerName(src) or 'Admin',message=message});notify(src,('Reply sent for report #%d.'):format(r.id)) else notify(src,('Reply saved; reporter for #%d is offline.'):format(r.id)) end
+ addAdminLog(src,r.reporterId,'Reply Report',('Report #%d'):format(reportId))
+ for _,pid in ipairs(GetPlayers()) do local a=tonumber(pid);if isAdmin(a) then TriggerClientEvent('fadm:updateData',a,{players=playerList(),reports=reports,onDuty=true,role=getAdminRole(a)}) end end
 end)
 
-RegisterNetEvent('fadm:closeReport', function(reportId)
-    local src = source
-    if not isAdmin(src) then return end
-
-    reportId = tonumber(reportId)
-    for _, report in ipairs(reports) do
-        if report.id == reportId then
-            report.status = 'closed'
-            report.closedBy = GetPlayerName(src) or 'Console'
-            notify(src, ('Closed report #%d.'):format(reportId))
-            break
-        end
-    end
-
-    TriggerClientEvent('fadm:updateData', src, {
-        players = playerList(),
-        reports = reports
-    })
+RegisterNetEvent('fadm:closeReport',function(reportId)
+ local src=source;if not isAdmin(src) then return end;reportId=tonumber(reportId);local r=findReport(reportId)
+ if not r or r.status~='open' then notify(src,'Open report not found.');return end
+ if not reportOwnedBy(r,src) then notify(src,('Report #%d is claimed by %s.'):format(reportId,r.claimedBy or 'another admin'));return end
+ MySQL.update.await("UPDATE fivem_admin_reports SET status='closed',closed_by_server_id=?,closed_by_name=?,closed_at=NOW() WHERE id=?",{src,GetPlayerName(src) or 'Console',reportId})
+ addAdminLog(src,r.reporterId,'Close Report',('Report #%d'):format(reportId));hydrateReports()
+ for _,pid in ipairs(GetPlayers()) do local a=tonumber(pid);if isAdmin(a) then TriggerClientEvent('fadm:updateData',a,{players=playerList(),reports=reports,onDuty=true,role=getAdminRole(a)}) end end
+ notify(src,('Closed report #%d.'):format(reportId))
 end)
 
 RegisterCommand('admin', function(src)
@@ -1060,32 +1005,27 @@ RegisterNetEvent('fadm:unban',function(banId)
 end)
 
 local function broadcastReports()
- for _,id in ipairs(GetPlayers()) do
-  local admin=tonumber(id)
-  if admin and isAdmin(admin) then TriggerClientEvent('fadm:updateData',admin,{players=playerList(),reports=reports,onDuty=true}) end
- end
+ hydrateReports()
+ for _,id in ipairs(GetPlayers()) do local a=tonumber(id);if a and isAdmin(a) then TriggerClientEvent('fadm:updateData',a,{players=playerList(),reports=reports,onDuty=true,role=getAdminRole(a)}) end end
 end
 RegisterNetEvent('fadm:claimReport',function(reportId)
- local src=source;if not isAdmin(src) then return end
- reportId=tonumber(reportId)
- for _,r in ipairs(reports) do
-  if r.id==reportId and r.status=='open' then
-   if r.claimedById and tonumber(r.claimedById)~=src then notify(src,('Report #%d is already claimed by %s.'):format(reportId,r.claimedBy or 'another admin'));return end
-   r.claimedById=src;r.claimedBy=GetPlayerName(src) or ('ID '..src);r.claimedAt=os.date('%Y-%m-%d %H:%M:%S')
-   addAdminLog(src,r.reporterId,'Claim Report',('Report #%d'):format(reportId));broadcastReports();return
-  end
- end
- notify(src,'Open report not found.')
+ local src=source;if not isAdmin(src) then return end;reportId=tonumber(reportId);local r=findReport(reportId)
+ if not r or r.status~='open' then notify(src,'Open report not found.');return end
+ if r.claimedById and tonumber(r.claimedById)~=src then notify(src,('Report #%d is already claimed by %s.'):format(reportId,r.claimedBy or 'another admin'));return end
+ MySQL.update.await('UPDATE fivem_admin_reports SET claimed_by_server_id=?,claimed_by_name=?,claimed_at=NOW() WHERE id=?',{src,GetPlayerName(src) or ('ID '..src),reportId})
+ addAdminLog(src,r.reporterId,'Claim Report',('Report #%d'):format(reportId));broadcastReports()
 end)
 RegisterNetEvent('fadm:unclaimReport',function(reportId)
- local src=source;if not isAdmin(src) then return end
- reportId=tonumber(reportId)
- for _,r in ipairs(reports) do
-  if r.id==reportId and r.status=='open' and tonumber(r.claimedById)==src then
-   r.claimedById=nil;r.claimedBy=nil;r.claimedAt=nil;addAdminLog(src,r.reporterId,'Unclaim Report',('Report #%d'):format(reportId));broadcastReports();return
-  end
- end
- notify(src,'You do not own that report claim.')
+ local src=source;if not isAdmin(src) then return end;reportId=tonumber(reportId);local r=findReport(reportId)
+ if not r or r.status~='open' or tonumber(r.claimedById)~=src then notify(src,'You do not own that report claim.');return end
+ MySQL.update.await('UPDATE fivem_admin_reports SET claimed_by_server_id=NULL,claimed_by_name=NULL,claimed_at=NULL WHERE id=?',{reportId})
+ addAdminLog(src,r.reporterId,'Unclaim Report',('Report #%d'):format(reportId));broadcastReports()
+end)
+RegisterNetEvent('fadm:takeoverReport',function(reportId)
+ local src=source;if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required to take over reports.');return end
+ reportId=tonumber(reportId);local r=findReport(reportId);if not r or r.status~='open' then notify(src,'Open report not found.');return end
+ local old=r.claimedBy or 'Unclaimed';MySQL.update.await('UPDATE fivem_admin_reports SET claimed_by_server_id=?,claimed_by_name=?,claimed_at=NOW() WHERE id=?',{src,GetPlayerName(src) or ('ID '..src),reportId})
+ addAdminLog(src,r.reporterId,'Take Over Report',('Report #%d from %s'):format(reportId,old));broadcastReports()
 end)
 
 RegisterNetEvent('fadm:requestVehicleCatalog',function()

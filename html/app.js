@@ -35,11 +35,11 @@ function render(){
  renderReports();
 }
 function renderReports(){
- const f=$('#reportFilter').value; const reports=[...state.reports].reverse().filter(r=>f==='all'||r.status===f); const open=state.reports.filter(r=>r.status==='open').length;
+ const f=$('#reportFilter').value; const reports=[...state.reports].reverse().filter(r=>f==='all'||(f==='claimed'?r.status==='open'&&r.claimedById:r.status===f)); const open=state.reports.filter(r=>r.status==='open').length;
  $('#reportCount').textContent=open;$('#dashReports').textContent=open;
  $('#reportsList').innerHTML=reports.length?reports.map(r=>`<article class="report-card" data-report-id="${r.id}"><div class="report-top"><div><b>Report #${r.id}</b><div class="muted">From ${esc(r.reporter)} (#${r.reporterId}) · Target: ${esc(r.targetName)}${r.target?` (#${r.target})`:''}</div></div><span class="badge ${esc(r.status)}">${esc(r.status)}</span></div><div class="report-msg">${esc(r.message)}</div>
  ${(r.replies||[]).length?`<div class="reply-history">${r.replies.map(x=>`<div class="admin-reply"><b>${esc(x.admin)}</b> ${esc(x.message)}<div class="muted">${esc(x.created||'')}</div></div>`).join('')}</div>`:''}
- ${r.status==='open'?`<div class="report-claim">${r.claimedBy?`<span class="badge open">Claimed by ${esc(r.claimedBy)}</span>`:'<span class="muted">Unclaimed</span>'}</div><div class="actions">${r.claimedBy?`<button data-unclaim-report="${r.id}">Unclaim</button>`:`<button class="primary" data-claim-report="${r.id}">Claim Report</button>`}${r.target?`<button data-act="spectate" data-id="${r.target}">Spectate target</button><button data-act="freeze" data-id="${r.target}">Freeze</button><button data-act="revive" data-id="${r.target}">Revive</button>`:''}<button class="primary" data-reply="${r.id}">Reply</button><button data-close-report="${r.id}">Close report</button></div>`:''}</article>`).join(''):'<div class="report-card muted">No reports in this view.</div>';
+ ${r.status==='open'?`<div class="report-claim">${r.claimedBy?`<span class="badge open">Claimed by ${esc(r.claimedBy)}</span>`:'<span class="muted">Unclaimed</span>'}</div><div class="actions">${r.claimedBy?`<button data-unclaim-report="${r.id}">Unclaim</button><button class="admin-role-only" data-takeover-report="${r.id}">Take Over</button>`:`<button class="primary" data-claim-report="${r.id}">Claim Report</button>`}${r.target?`<button data-act="spectate" data-id="${r.target}">Spectate target</button><button data-act="freeze" data-id="${r.target}">Freeze</button><button data-act="revive" data-id="${r.target}">Revive</button>`:''}<button class="primary" data-reply="${r.id}">Reply</button><button data-close-report="${r.id}">Close report</button></div>`:''}</article>`).join(''):'<div class="report-card muted">No reports in this view.</div>';
 }
 function confirmAction(action,id,name='player'){const dangerous=['ban','kill','fire','dogs','explodevehicle'];if(!dangerous.includes(action)){post('action',{action,target:+id});return}pending={action,id:+id};$('#confirmTitle').textContent=action==='ban'?'Ban player':'Confirm admin action';$('#confirmText').textContent=action==='ban'?`Ban ${name} from the server?`:`Run "${action}" on server ID ${id}?`;$('#reasonWrap').classList.toggle('hidden',action!=='ban');$('#confirmReason').value='';$('#confirm').classList.remove('hidden')}
 document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a)confirmAction(a.dataset.act,a.dataset.id,a.dataset.name);const r=e.target.closest('[data-reply]');if(r)openReply(+r.dataset.reply);const c=e.target.closest('[data-close-report]');if(c)post('closeReport',{id:+c.dataset.closeReport});const cr=e.target.closest('[data-claim-report]');if(cr)post('claimReport',{id:+cr.dataset.claimReport});const ur=e.target.closest('[data-unclaim-report]');if(ur)post('unclaimReport',{id:+ur.dataset.unclaimReport})});
@@ -604,7 +604,7 @@ function applyRoleUI(){
  const lab=$('#staffRoleLabel');if(lab)lab.textContent=adminRole==='superadmin'?'Super Admin':adminRole==='admin'?'Admin':'Moderator';
  $$('.superadmin-only').forEach(x=>x.classList.toggle('role-hidden',level<3));
  // High-impact controls are hidden for moderators; server checks remain authoritative.
- $$('[data-act="ban"],[data-act="kill"],[data-act="fire"],[data-act="explodevehicle"],#announcementBtn,[data-tab="bans"]').forEach(x=>x.classList.toggle('role-hidden',level<2));
+ $$('[data-act="ban"],[data-act="kill"],[data-act="fire"],[data-act="explodevehicle"],#announcementBtn,[data-tab="bans"],.admin-role-only').forEach(x=>x.classList.toggle('role-hidden',level<2));
 }
 let staffRows=[];
 function renderStaff(){
@@ -614,3 +614,5 @@ function renderStaff(){
 $('#refreshStaff').onclick=()=>post('getStaffList',{});
 document.addEventListener('click',e=>{if(e.target.closest('[data-tab="staff"]'))setTimeout(()=>post('getStaffList',{}),0)});
 window.addEventListener('message',e=>{const m=e.data||{};if(m.action==='staffList'){staffRows=Array.isArray(m.staff)?m.staff:[];renderStaff()}});
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-takeover-report]');if(b){post('takeoverReport',{id:Number(b.dataset.takeoverReport)});toast(`Taking over report #${b.dataset.takeoverReport}...`)}})

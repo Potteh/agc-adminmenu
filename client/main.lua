@@ -833,3 +833,5 @@ RegisterNetEvent('fadm:jobCatalog',function(rows) SendNUIMessage({action='jobCat
 
 RegisterNUICallback('getStaffList',function(_,cb) TriggerServerEvent('fadm:requestStaffList');cb({ok=true}) end)
 RegisterNetEvent('fadm:staffList',function(rows) SendNUIMessage({action='staffList',staff=rows}) end)
+
+RegisterNUICallback('takeoverReport',function(data,cb) TriggerServerEvent('fadm:takeoverReport',tonumber(data.id));cb({ok=true}) end)
