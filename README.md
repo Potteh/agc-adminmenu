@@ -520,3 +520,12 @@ for the selected player. No server-side action logic was changed.
 
 ## v75 Discord Admin Logs
 Existing MySQL admin audit entries are also sent to Discord through a server-side webhook. Set `Config.DiscordLogs.Webhook` in `config.lua`. The live webhook secret is intentionally not embedded in this ZIP. Discord mentions are disabled and failed deliveries are reported in the server console.
+
+## v76 Duty Roster Error Fix
+Fixed `broadcastDutyRoster()` being called before its local Lua function was
+declared. The duty toggle handler now registers after `getOnDutyAdmins()` and
+`broadcastDutyRoster()` are defined. Player disconnects also refresh the duty
+roster so disconnected staff disappear immediately.
+
+Built directly from the uploaded server copy, preserving its current Discord
+webhook configuration and all existing integrations.

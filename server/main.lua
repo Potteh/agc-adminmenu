@@ -947,17 +947,6 @@ CreateThread(function()
  ]])
 end)
 
-RegisterNetEvent('fadm:toggleDuty',function()
- local src=source;if not hasAdminAce(src) then return end
- adminDuty[src]=not adminDuty[src]
- addAdminLog(src,nil,adminDuty[src] and 'Admin Duty On' or 'Admin Duty Off','Duty status changed')
- TriggerClientEvent('fadm:dutyState',src,adminDuty[src])
- TriggerClientEvent('fadm:updateData',src,{players=adminDuty[src] and playerList() or {},reports=adminDuty[src] and reports or {},onDuty=adminDuty[src],role=getAdminRole(src)})
- notify(src,adminDuty[src] and 'You are now on admin duty.' or 'You are now off admin duty.')
- broadcastDutyRoster()
-end)
-AddEventHandler('playerDropped',function() adminDuty[source]=nil end)
-
 RegisterNetEvent('fadm:issueWarning',function(target,reason)
  local src=source;if not isAdmin(src) then return end
  target=tonumber(target);reason=tostring(reason or ''):gsub('^%s+',''):gsub('%s+$','')
@@ -996,6 +985,20 @@ local function broadcastDutyRoster()
   if n and hasAdminAce(n) then TriggerClientEvent('fadm:dutyRoster',n,roster) end
  end
 end
+
+RegisterNetEvent('fadm:toggleDuty',function()
+ local src=source;if not hasAdminAce(src) then return end
+ adminDuty[src]=not adminDuty[src]
+ addAdminLog(src,nil,adminDuty[src] and 'Admin Duty On' or 'Admin Duty Off','Duty status changed')
+ TriggerClientEvent('fadm:dutyState',src,adminDuty[src])
+ TriggerClientEvent('fadm:updateData',src,{players=adminDuty[src] and playerList() or {},reports=adminDuty[src] and reports or {},onDuty=adminDuty[src],role=getAdminRole(src)})
+ notify(src,adminDuty[src] and 'You are now on admin duty.' or 'You are now off admin duty.')
+ broadcastDutyRoster()
+end)
+AddEventHandler('playerDropped',function()
+ adminDuty[source]=nil
+ broadcastDutyRoster()
+end)
 
 RegisterNetEvent('fadm:requestDutyRoster',function()
  local src=source;if not hasAdminAce(src) then return end
