@@ -324,6 +324,9 @@ document.addEventListener('click',e=>{
  if(a==='vehiclemanage'){
    managementTarget=p;closePlayerInfo();openVehicleManagement(p);return
  }
+ if(a==='warn'){
+   managementTarget=p;closePlayerInfo();openWarnings(p);return
+ }
  if(a==='money'){
    managementTarget=p;closePlayerInfo();
    document.querySelector('#moneyAmount').value='';
@@ -488,3 +491,23 @@ $('#vehicleDeleteConfirmBtn').onclick=async()=>{
  await post('vehicleManage',{target:managementTarget.id,action:'delete'});
  toast('Delete Vehicle action sent.');
 };
+
+let dutyOn=false;
+function renderDuty(){
+ const s=$('#dutyStatus'),b=$('#adminDutyBtn');
+ if(s){s.textContent=dutyOn?'ON DUTY':'OFF DUTY';s.classList.toggle('good',dutyOn)}
+ if(b){const x=b.querySelector('b');if(x)x.textContent=dutyOn?'Go Off Duty':'Go On Duty'}
+}
+$('#adminDutyBtn').onclick=async()=>{const r=await(await post('toggleAdminDuty',{})).json();if(r&&r.ok){dutyOn=!!r.onDuty;renderDuty();toast(dutyOn?'You are now on admin duty.':'You are now off admin duty.')}};
+
+async function openWarnings(p){
+ managementTarget=p;$('#warningTitle').textContent=`Warnings — ${p.characterName||p.name}`;$('#warningReason').value='';$('#warningModal').classList.remove('hidden');await loadWarnings();
+}
+async function loadWarnings(){
+ if(!managementTarget)return;const box=$('#warningList');box.innerHTML='<div class="pi-note">Loading warnings...</div>';
+ try{const r=await(await post('getWarnings',{target:managementTarget.id})).json();const rows=r.warnings||[];box.innerHTML=rows.length?rows.map(w=>`<div class="admin-log-row"><div><b>${esc(w.reason||'Warning')}</b><small>${esc(w.createdAt||'')} · ${esc(w.adminName||'Admin')}</small></div><span>#${w.id}</span></div>`).join(''):'<div class="pi-note">No warnings on record.</div>'}catch(e){box.innerHTML='<div class="pi-note">Unable to load warnings.</div>'}
+}
+$('#warningIssue').onclick=async()=>{if(!managementTarget)return;const reason=$('#warningReason').value.trim();if(reason.length<3)return toast('Enter a warning reason.');await post('issueWarning',{target:managementTarget.id,reason});$('#warningReason').value='';toast('Warning issued.');setTimeout(loadWarnings,250)};
+$('#warningRefresh').onclick=loadWarnings;$('#warningClose').onclick=()=>$('#warningModal').classList.add('hidden');$('#warningDone').onclick=()=>$('#warningModal').classList.add('hidden');
+
+window.addEventListener('message',e=>{if(e.data&&e.data.action==='dutyState'){dutyOn=!!e.data.onDuty;renderDuty();}});

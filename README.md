@@ -329,3 +329,10 @@ automatically creates `fivem_admin_logs` through oxmysql and loads the latest
 entries directly from the database whenever Admin Logs is refreshed. This fixes
 logs disappearing after reconnects/resource or server restarts and avoids
 deployment updates overwriting the JSON audit file.
+
+## v50 Warnings + Admin Duty
+- Persistent MySQL player warnings tied to QBCore citizenid.
+- Manage Player > Warnings shows history and issues a new warning.
+- Warned players receive an immediate notification.
+- Dashboard Admin Duty toggle with ON/OFF status.
+- Duty changes and warnings are written to persistent Admin Logs.

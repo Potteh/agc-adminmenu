@@ -947,3 +947,46 @@ RegisterNetEvent('fadm:vehicleManage',function(target,action)
  TriggerClientEvent('fadm:vehicleManageClient',target,action)
  notify(src,('%s sent to %s.'):format(labels[action],GetPlayerName(target)))
 end)
+
+
+local adminDuty={}
+CreateThread(function()
+ MySQL.query.await([[
+  CREATE TABLE IF NOT EXISTS fivem_admin_warnings (
+   id INT NOT NULL AUTO_INCREMENT,
+   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   citizenid VARCHAR(64) NOT NULL,
+   player_name VARCHAR(100) NOT NULL,
+   admin_name VARCHAR(100) NOT NULL,
+   reason VARCHAR(500) NOT NULL,
+   PRIMARY KEY(id), INDEX idx_warn_citizenid(citizenid), INDEX idx_warn_created(created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+ ]])
+end)
+
+RegisterNetEvent('fadm:toggleDuty',function()
+ local src=source;if not isAdmin(src) then return end
+ adminDuty[src]=not adminDuty[src]
+ addAdminLog(src,nil,adminDuty[src] and 'Admin Duty On' or 'Admin Duty Off','Duty status changed')
+ TriggerClientEvent('fadm:dutyState',src,adminDuty[src])
+ notify(src,adminDuty[src] and 'You are now on admin duty.' or 'You are now off admin duty.')
+end)
+AddEventHandler('playerDropped',function() adminDuty[source]=nil end)
+
+RegisterNetEvent('fadm:issueWarning',function(target,reason)
+ local src=source;if not isAdmin(src) then return end
+ target=tonumber(target);reason=tostring(reason or ''):gsub('^%s+',''):gsub('%s+$','')
+ if not target or not GetPlayerName(target) then notify(src,'Player is no longer online.') return end
+ if #reason<3 then notify(src,'Enter a warning reason.') return end;if #reason>500 then reason=reason:sub(1,500) end
+ local QBCore=exports['qb-core']:GetCoreObject();local Player=QBCore.Functions.GetPlayer(target);if not Player then return end
+ local cid=Player.PlayerData.citizenid;local pname=GetPlayerName(target);local aname=GetPlayerName(src) or ('ID '..src)
+ MySQL.insert.await('INSERT INTO fivem_admin_warnings (citizenid,player_name,admin_name,reason) VALUES (?,?,?,?)',{cid,pname,aname,reason})
+ addAdminLog(src,target,'Warning',reason);notify(src,('Warning issued to %s.'):format(pname));TriggerClientEvent('fadm:warningReceived',target,reason,aname)
+end)
+RegisterNetEvent('fadm:requestWarnings',function(target,rid)
+ local src=source;if not isAdmin(src) then return end;target=tonumber(target)
+ local QBCore=exports['qb-core']:GetCoreObject();local Player=target and QBCore.Functions.GetPlayer(target) or nil
+ if not Player then TriggerClientEvent('fadm:warningsResponse',src,rid,{}) return end
+ local rows=MySQL.query.await('SELECT id, DATE_FORMAT(created_at,"%Y-%m-%d %H:%i:%s") AS createdAt, admin_name AS adminName, reason FROM fivem_admin_warnings WHERE citizenid=? ORDER BY id DESC LIMIT 100',{Player.PlayerData.citizenid}) or {}
+ TriggerClientEvent('fadm:warningsResponse',src,rid,rows)
+end)

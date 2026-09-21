@@ -804,3 +804,22 @@ RegisterNUICallback('vehicleManage',function(data,cb)
  TriggerServerEvent('fadm:vehicleManage',data.target,data.action)
  cb({ok=true})
 end)
+
+
+local fadmWarningRequests={}
+local fadmWarningCounter=0
+RegisterNUICallback('getWarnings',function(data,cb)
+ fadmWarningCounter=fadmWarningCounter+1;local rid=tostring(GetGameTimer())..':warn:'..fadmWarningCounter;fadmWarningRequests[rid]=cb
+ TriggerServerEvent('fadm:requestWarnings',data.target,rid)
+ SetTimeout(3000,function() if fadmWarningRequests[rid] then fadmWarningRequests[rid]({ok=false,warnings={}});fadmWarningRequests[rid]=nil end end)
+end)
+RegisterNetEvent('fadm:warningsResponse',function(rid,rows) local cb=fadmWarningRequests[tostring(rid)];if cb then fadmWarningRequests[tostring(rid)]=nil;cb({ok=true,warnings=rows or {}}) end end)
+RegisterNUICallback('issueWarning',function(data,cb) TriggerServerEvent('fadm:issueWarning',data.target,data.reason);cb({ok=true}) end)
+RegisterNUICallback('toggleAdminDuty',function(_,cb) TriggerServerEvent('fadm:toggleDuty');fadmDutyCb=cb;SetTimeout(2000,function() if fadmDutyCb then fadmDutyCb({ok=false});fadmDutyCb=nil end end) end)
+fadmDutyCb=nil
+RegisterNetEvent('fadm:dutyState',function(state) if fadmDutyCb then fadmDutyCb({ok=true,onDuty=state});fadmDutyCb=nil end;SendNUIMessage({action='dutyState',onDuty=state}) end)
+RegisterNetEvent('fadm:warningReceived',function(reason,adminName)
+ local msg=('ADMIN WARNING: %s'):format(reason or 'No reason provided.')
+ BeginTextCommandThefeedPost('STRING');AddTextComponentSubstringPlayerName(msg);EndTextCommandThefeedPostTicker(false,true)
+ TriggerEvent('fadm:notify',msg)
+end)
