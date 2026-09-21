@@ -79,3 +79,5 @@ body.admin-off-duty #dashboard .stat,body.admin-off-duty #dashboard .quick-grid 
 .spectate-hud{position:fixed;left:50%;bottom:42px;transform:translateX(-50%);z-index:100001;background:rgba(12,15,20,.94);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 16px;display:grid;grid-template-columns:auto auto;gap:3px 10px;align-items:center;pointer-events:none;box-shadow:0 10px 35px rgba(0,0,0,.4)}.spectate-hud.hidden{display:none}.spectate-hud b{font-size:11px;letter-spacing:.12em}.spectate-hud span{font-weight:800}.spectate-hud small{grid-column:1/-1;text-align:center;opacity:.65}
 
 .role-hidden{display:none !important}
+
+.entity-debug-card{grid-column:span 2}.entity-debug{max-height:390px;overflow:auto;margin:12px 0}.debug-row{display:flex;justify-content:space-between;gap:18px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}.debug-row span{opacity:.62}.debug-row b{text-align:right;word-break:break-all}

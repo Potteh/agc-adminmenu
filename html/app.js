@@ -264,7 +264,18 @@ let noclipEnabled=false,invisibleEnabled=false;
 $('#noclipBtn').onclick=async()=>{const d=await(await post('toggleNoclip')).json();noclipEnabled=!!d.enabled;$('#noclipStatus').textContent=noclipEnabled?'ON':'OFF';$('#noclipBtn').textContent=noclipEnabled?'Disable Noclip':'Enable Noclip';toast(`Noclip ${noclipEnabled?'enabled':'disabled'}.`)};
 $('#invisibleBtn').onclick=async()=>{const d=await(await post('toggleInvisible')).json();invisibleEnabled=!!d.enabled;$('#invisibleStatus').textContent=invisibleEnabled?'ON':'OFF';$('#invisibleBtn').textContent=invisibleEnabled?'Become Visible':'Become Invisible';toast(`Invisible Mode ${invisibleEnabled?'enabled':'disabled'}.`)};
 $('#tpWaypointBtn').onclick=async()=>{const d=await(await post('teleportWaypoint')).json();toast(d.ok?'Teleported to waypoint.':d.message)};
-$('#inspectEntityBtn').onclick=async()=>{const d=await(await post('inspectEntity')).json();if(!d.ok){$('#entityDebug').textContent=d.message;return}$('#entityDebug').innerHTML=`<b>${esc(d.type)}</b><br>Entity: ${d.entity}<br>Network ID: ${d.networkId}<br>Model Hash: ${d.model}<br>Coords: ${Number(d.x).toFixed(3)}, ${Number(d.y).toFixed(3)}, ${Number(d.z).toFixed(3)}<br>Heading: ${Number(d.heading).toFixed(3)}<br>Health: ${d.health}`};
+let lastEntityDebug='';
+$('#inspectEntityBtn').onclick=async()=>{
+ const d=await(await post('inspectEntity')).json();
+ if(!d.ok){$('#entityDebug').textContent=d.message;lastEntityDebug='';return}
+ const n=v=>Number(v||0).toFixed(2), yes=v=>v?'Yes':'No';
+ const base=[`Type: ${d.type}`,`Entity Handle: ${d.entity}`,`Model Hash: ${d.model}`,`Network ID: ${d.networkId}`,`Networked: ${yes(d.networked)}`,`Network Owner Server ID: ${d.owner>=0?d.owner:'N/A'}`,`Distance: ${n(d.distance)} m`,`Coords: ${n(d.x)}, ${n(d.y)}, ${n(d.z)}`,`Heading: ${n(d.heading)}`,`Health: ${d.health} / ${d.maxHealth}`,`Visible: ${yes(d.visible)}`];
+ if(d.type==='Vehicle')base.push(`Plate: ${String(d.plate||'').trim()||'N/A'}`,`Speed: ${n(d.speed)} mph`,`Engine Health: ${n(d.engine)}`,`Body Health: ${n(d.body)}`,`Fuel Tank Health: ${n(d.tank)}`,`Fuel Level: ${n(d.fuel)}%`,`Dirt Level: ${n(d.dirt)}`,`Door Lock Status: ${d.lock}`,`Driver Present: ${yes(d.driver)}`);
+ if(d.type==='Ped')base.push(`Player Ped: ${yes(d.isPlayer)}`,`Dead: ${yes(d.dead)}`,`Armor: ${d.armor||0}`,...(d.isPlayer?[`Player: ${d.playerName||'Unknown'} (#${d.playerServerId||'?'})`]:[]));
+ lastEntityDebug=base.join('\n');
+ $('#entityDebug').innerHTML=base.map((x,i)=>{const p=x.indexOf(':');return p>0?`<div class="debug-row"><span>${esc(x.slice(0,p))}</span><b>${esc(x.slice(p+1).trim())}</b></div>`:`<div>${esc(x)}</div>`}).join('');
+};
+$('#copyEntityBtn').onclick=async()=>{if(!lastEntityDebug)return toast('Inspect an entity first.');try{await navigator.clipboard.writeText(lastEntityDebug);toast('Entity details copied.')}catch(e){toast('Could not copy entity details.')}};
 
 
 // v35: FiveM NUI wheel fallback.

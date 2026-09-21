@@ -429,3 +429,11 @@ automatically claims it. Admin/Super Admin can use Take Over to transfer a
 claim. Claim/unclaim/takeover/close/reply actions are audit logged. Added a
 Claimed-only report filter. Reporter server IDs are retained for live reply
 delivery; if the reporter is offline, the reply remains in persistent history.
+
+## v64 Entity Debugger v2
+Developer Entity Debugger now raycasts up to 40 meters and displays entity
+type/handle/model hash, network ID/network state, network owner server ID,
+distance, coordinates, heading, health/max health and visibility. Vehicles add
+plate, speed, engine/body/tank health, fuel, dirt, lock status and driver
+presence. Peds add player/dead/armor data and, for player peds, the FiveM name
+and server ID. Copy Details copies the current inspection as plain text.
