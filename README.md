@@ -355,3 +355,9 @@ is closed. The alert shows report number, reporter, target when present, and the
 report message. It auto-dismisses after 12 seconds or can be dismissed manually.
 The existing server already broadcasts `fadm:newReport` only to admins, so no
 new permission path is introduced.
+
+## v54 Duty Enforcement
+ACE admins now start off duty. Off-duty admins may open the menu only to use the
+Dashboard/Go On Duty control. All administrative actions are independently
+blocked server-side until duty is active. Off-duty admins do not receive new
+report alerts, and report/player data is cleared when going off duty.

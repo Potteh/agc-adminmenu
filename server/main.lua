@@ -6,8 +6,12 @@ local bans = {}
 local reports = {}
 local nextReportId = 1
 
-local function isAdmin(src)
+local adminDuty = {}
+local function hasAdminAce(src)
     return src == 0 or IsPlayerAceAllowed(src, Config.AdminAce)
+end
+local function isAdmin(src)
+    return src == 0 or (hasAdminAce(src) and adminDuty[src] == true)
 end
 
 local function notify(src, msg)
@@ -182,22 +186,14 @@ AddEventHandler('playerConnecting', function(_, _, deferrals)
 end)
 
 RegisterNetEvent('fadm:getData', function()
-    local src = source
-    if not isAdmin(src) then return end
-
-    TriggerClientEvent('fadm:openData', src, {
-        players = playerList(),
-        reports = reports
-    })
+ local src=source;if not hasAdminAce(src) then return end
+ local onDuty=adminDuty[src]==true
+ TriggerClientEvent('fadm:openData',src,{players=onDuty and playerList() or {},reports=onDuty and reports or {},onDuty=onDuty})
 end)
-
 RegisterNetEvent('fadm:refresh', function()
-    local src = source
-    if not isAdmin(src) then return end
-    TriggerClientEvent('fadm:updateData', src, {
-        players = playerList(),
-        reports = reports
-    })
+ local src=source;if not hasAdminAce(src) then return end
+ local onDuty=adminDuty[src]==true
+ TriggerClientEvent('fadm:updateData',src,{players=onDuty and playerList() or {},reports=onDuty and reports or {},onDuty=onDuty})
 end)
 
 RegisterNetEvent('fadm:action', function(action, target, reason)
@@ -949,7 +945,6 @@ RegisterNetEvent('fadm:vehicleManage',function(target,action)
 end)
 
 
-local adminDuty={}
 CreateThread(function()
  MySQL.query.await([[
   CREATE TABLE IF NOT EXISTS fivem_admin_warnings (
@@ -965,10 +960,11 @@ CreateThread(function()
 end)
 
 RegisterNetEvent('fadm:toggleDuty',function()
- local src=source;if not isAdmin(src) then return end
+ local src=source;if not hasAdminAce(src) then return end
  adminDuty[src]=not adminDuty[src]
  addAdminLog(src,nil,adminDuty[src] and 'Admin Duty On' or 'Admin Duty Off','Duty status changed')
  TriggerClientEvent('fadm:dutyState',src,adminDuty[src])
+ TriggerClientEvent('fadm:updateData',src,{players=adminDuty[src] and playerList() or {},reports=adminDuty[src] and reports or {},onDuty=adminDuty[src]})
  notify(src,adminDuty[src] and 'You are now on admin duty.' or 'You are now off admin duty.')
 end)
 AddEventHandler('playerDropped',function() adminDuty[source]=nil end)

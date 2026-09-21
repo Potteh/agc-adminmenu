@@ -81,7 +81,7 @@ $('#restartSequenceBtn').onclick=()=>{
 };
 function formatRestartTime(seconds){seconds=Math.max(0,Number(seconds)||0);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`}
 
-window.addEventListener('message',e=>{const m=e.data;if(m.action==='show'){app.classList.remove('hidden');if(m.data){state=m.data;render()}}else if(m.action==='hide')app.classList.add('hidden');else if(m.action==='data'){state=m.data;render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();showAdminReportAlert(m.report)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
+window.addEventListener('message',e=>{const m=e.data;if(m.action==='show'){app.classList.remove('hidden');if(m.data){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}}else if(m.action==='hide')app.classList.add('hidden');else if(m.action==='data'){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();showAdminReportAlert(m.report)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#confirm').classList.contains('hidden')){$('#confirm').classList.add('hidden');pending=null}else if(e.key==='Escape')post('close')});
 
 document.addEventListener('click', async (e) => {
@@ -504,7 +504,7 @@ $('#vehicleDeleteConfirmBtn').onclick=async()=>{
 let dutyOn=false;
 function renderDuty(){
  const s=$('#dutyStatus'),b=$('#adminDutyBtn');
- if(s){s.textContent=dutyOn?'ON DUTY':'OFF DUTY';s.classList.toggle('good',dutyOn)}
+ if(s){s.textContent=dutyOn?'ON DUTY':'OFF DUTY';s.classList.toggle('good',dutyOn)}document.body.classList.toggle('admin-off-duty',!dutyOn)
  if(b){const x=b.querySelector('b');if(x)x.textContent=dutyOn?'Go Off Duty':'Go On Duty'}
 }
 $('#adminDutyBtn').onclick=async()=>{const r=await(await post('toggleAdminDuty',{})).json();if(r&&r.ok){dutyOn=!!r.onDuty;renderDuty();toast(dutyOn?'You are now on admin duty.':'You are now off admin duty.')}};
@@ -520,3 +520,10 @@ $('#warningIssue').onclick=async()=>{if(!managementTarget)return;const reason=$(
 $('#warningRefresh').onclick=loadWarnings;$('#warningClose').onclick=()=>$('#warningModal').classList.add('hidden');$('#warningDone').onclick=()=>$('#warningModal').classList.add('hidden');
 
 window.addEventListener('message',e=>{if(e.data&&e.data.action==='dutyState'){dutyOn=!!e.data.onDuty;renderDuty();}});
+
+document.addEventListener('click',e=>{
+ if(dutyOn)return;
+ const b=e.target.closest('button');if(!b)return;
+ if(b.id==='adminDutyBtn'||b.id==='close'||b.dataset.tab==='dashboard')return;
+ e.preventDefault();e.stopImmediatePropagation();toast('Go on admin duty to use administrative functions.');
+},true);
