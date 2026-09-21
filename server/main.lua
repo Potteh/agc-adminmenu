@@ -143,10 +143,17 @@ local function playerList()
             local full = (tostring(ci.firstname or '') .. ' ' .. tostring(ci.lastname or '')):gsub('^%s+',''):gsub('%s+$','')
             if full ~= '' then characterName = full end
         end
+        local pd = Player and Player.PlayerData or {}
+        local job = pd.job or {}
+        local grade = job.grade or {}
+        local money = pd.money or {}
         list[#list+1] = {
-            id=src, name=platformName,
-            rockstarName=platformName,
-            characterName=characterName
+            id=src, name=platformName, rockstarName=platformName, characterName=characterName,
+            citizenid=pd.citizenid or 'N/A',
+            jobName=job.name or 'unemployed', jobLabel=job.label or job.name or 'Unemployed',
+            jobGrade=tonumber(grade.level or grade) or 0, jobGradeName=grade.name or '',
+            gang=(pd.gang and (pd.gang.label or pd.gang.name)) or 'None',
+            cash=tonumber(money.cash) or 0, bank=tonumber(money.bank) or 0
         }
     end
     table.sort(list,function(x,y) return x.id < y.id end)

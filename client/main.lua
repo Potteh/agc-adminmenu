@@ -693,3 +693,12 @@ RegisterNUICallback('inspectEntity',function(_,cb)
  networkId=NetworkGetNetworkIdFromEntity(entity),model=GetEntityModel(entity),x=c.x,y=c.y,z=c.z,
  heading=GetEntityHeading(entity),health=GetEntityHealth(entity)})
 end)
+
+RegisterNUICallback('getPlayerLiveInfo',function(data,cb)
+ local sid=tonumber(data and data.id); if not sid then cb({ok=false}) return end
+ local player=GetPlayerFromServerId(sid); if player==-1 then cb({ok=false,message='Player is not currently streamed to you.'}) return end
+ local ped=GetPlayerPed(player); if not DoesEntityExist(ped) then cb({ok=false,message='Player entity unavailable.'}) return end
+ local pos=GetEntityCoords(ped); local veh=GetVehiclePedIsIn(ped,false); local vd=nil
+ if veh~=0 then vd={model=GetEntityModel(veh),plate=GetVehicleNumberPlateText(veh),engine=GetVehicleEngineHealth(veh),body=GetVehicleBodyHealth(veh),speed=GetEntitySpeed(veh)*2.236936} end
+ cb({ok=true,health=GetEntityHealth(ped),maxHealth=GetEntityMaxHealth(ped),armor=GetPedArmour(ped),x=pos.x,y=pos.y,z=pos.z,heading=GetEntityHeading(ped),vehicle=vd})
+end)

@@ -256,3 +256,6 @@ Added Noclip, Invisible Mode, Teleport to Waypoint, and Entity Debugger to Devel
 Adds an explicit bounded scrollbar to the admin workspace and a FiveM NUI wheel
 fallback that directly scrolls the main content container. Page Up/Page Down,
 Home, and End are also supported while the menu is open.
+
+## v36 Player Management
+Adds a Manage Player panel with QBCore identity, job, gang, money, live status, current vehicle information, and quick actions.
