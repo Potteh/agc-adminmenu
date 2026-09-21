@@ -426,30 +426,35 @@ document.addEventListener('click', e => {
  if(action) post('auditAction',{target:null,action,details:''}).catch(()=>{});
 });
 
-// v45: authoritative UI audit hooks for the actual World Controls elements.
-// These run alongside the established world handlers and only record the action.
+// v46: audit the actual World Controls used by this UI.
 (() => {
  const audit=(action,details='')=>post('auditAction',{target:null,action,details}).catch(()=>{});
 
- const day=document.querySelector('#setDay');
- if(day) day.addEventListener('click',()=>audit('Set Day','Time preset: day'));
-
- const night=document.querySelector('#setNight');
- if(night) night.addEventListener('click',()=>audit('Set Night','Time preset: night'));
-
- const weather=document.querySelector('#weatherSelect');
- if(weather) weather.addEventListener('change',()=>audit('Set Weather',`Weather: ${weather.value}`));
-
- // Some builds apply weather with a separate button.
- const weatherApply=document.querySelector('#applyWeather');
- if(weatherApply) weatherApply.addEventListener('click',()=>{
-   const w=document.querySelector('#weatherSelect');
-   audit('Set Weather',`Weather: ${w?.value||'unknown'}`);
+ document.querySelectorAll('[data-world="time"]').forEach(b=>{
+   b.addEventListener('click',()=>{
+     const hour=String(b.dataset.value||'');
+     audit(hour==='0'?'Set Night':'Set Day',`Server time hour: ${hour}`);
+   });
  });
 
- const quake=document.querySelector('#earthquake');
- if(quake) quake.addEventListener('click',()=>audit('Earthquake','Triggered server-wide earthquake'));
+ const weatherApply=document.querySelector('#applyWeather');
+ if(weatherApply) weatherApply.addEventListener('click',()=>{
+   const preset=document.querySelector('#weatherPreset');
+   const value=preset ? preset.value : '';
+   audit('Set Weather',`Weather: ${value||'unknown'}`);
+ });
 
- const restart=document.querySelector('#restartSequence');
- if(restart) restart.addEventListener('click',()=>audit('Restart Sequence','Triggered restart warning sequence'));
+ document.querySelectorAll('[data-world="dynamicweather"]').forEach(b=>{
+   b.addEventListener('click',()=>audit(
+     b.dataset.value==='true'?'Enable Dynamic Weather':'Disable Dynamic Weather',
+     `Dynamic weather: ${b.dataset.value}`
+   ));
+ });
+
+ document.querySelectorAll('[data-world="blackout"]').forEach(b=>{
+   b.addEventListener('click',()=>audit(
+     b.dataset.value==='true'?'Enable Blackout':'Disable Blackout',
+     `Blackout: ${b.dataset.value}`
+   ));
+ });
 })();

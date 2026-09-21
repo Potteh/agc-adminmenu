@@ -305,3 +305,8 @@ or future tabs now receive a safe fallback title instead of throwing
 Adds direct audit hooks for the actual World Controls UI selectors so Day/Night,
 weather selection/apply, earthquake, and restart controls can be recorded in
 Admin Logs instead of relying only on the generic v43 button-ID matcher.
+
+## v46 World Audit Selector Fix
+Corrected World Controls logging against the actual markup:
+data-world=time with values 12/0 for Day/Night, and #weatherPreset for the selected
+weather. Also logs Dynamic Weather and Blackout toggles.
