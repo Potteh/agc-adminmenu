@@ -259,3 +259,7 @@ Home, and End are also supported while the menu is open.
 
 ## v36 Player Management
 Adds a Manage Player panel with QBCore identity, job, gang, money, live status, current vehicle information, and quick actions.
+
+## v37 Manage Player fix
+Fixed Manage Player assuming `players` was always an array. The handler now
+normalizes the existing UI player-state shape before using Array.find().
