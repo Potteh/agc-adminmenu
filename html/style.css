@@ -23,28 +23,3 @@
 .dev-status{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04)}.dev-status span{color:#8f9bab;font-size:12px;text-transform:uppercase}.dev-status strong{font-size:13px}
 
 .entity-debug{font-family:monospace;font-size:12px;line-height:1.7;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04);min-height:44px}
-
-
-/* v34 safe scrolling fix - preserves the original menu shell/open behavior */
-.workspace {
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
-.workspace > main {
-  flex: 1 1 0;
-  height: auto;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 40px;
-}
-
-.workspace > main::-webkit-scrollbar {
-  width: 9px;
-}
-.workspace > main::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,.18);
-  border-radius: 8px;
-}
