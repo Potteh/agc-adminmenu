@@ -279,3 +279,10 @@ hidden modal stacking.
 Refresh Live Info now requests current QBCore PlayerData from the server as well
 as live ped/vehicle data. Cash, bank, job, grade, gang, and Citizen ID therefore
 refresh immediately after administrative changes such as Give/Remove Money.
+
+## v41 Owned Vehicles / Garage
+Manage Player now includes Owned Vehicles. Admins can inspect a character's
+player_vehicles rows including model, plate, garage, stored state, fuel, engine,
+and body condition. A vehicle can be moved to another qb-garages garage by its
+garage spawn/config name. Moving it sets state=1 so qb-garages treats it as stored.
+All database operations are server-side and ACE protected.

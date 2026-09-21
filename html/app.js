@@ -280,7 +280,7 @@ async function renderPlayerInfo(p){
  }catch(e){}
  let live={ok:false};try{live=await(await post('getPlayerLiveInfo',{id:p.id})).json()}catch(e){}
  let liveHtml=live.ok?`<div class="pi-grid"><div class="pi-stat"><span>Health</span><b>${live.health} / ${live.maxHealth}</b></div><div class="pi-stat"><span>Armor</span><b>${live.armor}</b></div><div class="pi-stat"><span>Heading</span><b>${Number(live.heading).toFixed(1)}</b></div><div class="pi-stat"><span>Coordinates</span><b>${Number(live.x).toFixed(2)}, ${Number(live.y).toFixed(2)}, ${Number(live.z).toFixed(2)}</b></div></div>${live.vehicle?`<div class="pi-section"><h3>Current Vehicle</h3><div class="pi-grid"><div class="pi-stat"><span>Plate</span><b>${esc(live.vehicle.plate)}</b></div><div class="pi-stat"><span>Model Hash</span><b>${live.vehicle.model}</b></div><div class="pi-stat"><span>Engine</span><b>${Math.round(live.vehicle.engine)}</b></div><div class="pi-stat"><span>Speed</span><b>${Number(live.vehicle.speed).toFixed(1)} MPH</b></div></div></div>`:''}`:`<div class="pi-note">${esc(live.message||'Live data unavailable.')}</div>`;
- document.querySelector('#piBody').innerHTML=`<div class="pi-section"><h3>Identity</h3><div class="pi-grid"><div class="pi-stat"><span>Character</span><b>${esc(p.characterName||'Unknown')}</b></div><div class="pi-stat"><span>FiveM / Rockstar</span><b>${esc(p.rockstarName||p.name)}</b></div><div class="pi-stat"><span>Server ID</span><b>#${p.id}</b></div><div class="pi-stat"><span>Citizen ID</span><b>${esc(p.citizenid||'N/A')}</b></div></div></div><div class="pi-section"><h3>QBCore</h3><div class="pi-grid"><div class="pi-stat"><span>Job</span><b>${esc(p.jobLabel||p.jobName||'Unemployed')}</b></div><div class="pi-stat"><span>Grade</span><b>${esc(String(p.jobGradeName||p.jobGrade||0))} (${p.jobGrade||0})</b></div><div class="pi-stat"><span>Gang</span><b>${esc(p.gang||'None')}</b></div><div class="pi-stat"><span>Cash</span><b>${fmtMoney(p.cash)}</b></div><div class="pi-stat"><span>Bank</span><b>${fmtMoney(p.bank)}</b></div></div></div><div class="pi-section"><h3>Live Status</h3>${liveHtml}</div><div class="pi-section"><h3>Quick Actions</h3><div class="pi-actions"><button data-pi-act="goto">Go To</button><button data-pi-act="bring">Bring</button><button data-pi-act="spectate">Spectate</button><button data-pi-act="freeze">Freeze</button><button data-pi-act="unfreeze">Unfreeze</button><button data-pi-act="revive">Revive</button><button data-pi-act="heal">Heal</button><button data-pi-act="ragdoll">Ragdoll</button><button data-pi-extra="waypoint">Set Waypoint</button><button data-pi-extra="giveitem">Give Item</button><button data-pi-extra="setjob">Set Job</button><button data-pi-extra="transfer">Transfer Vehicle</button><button data-pi-extra="money">Manage Money</button><button class="soft-danger" data-pi-extra="kick">Kick</button><button class="soft-danger" data-pi-act="kill">Kill</button></div></div>`;
+ document.querySelector('#piBody').innerHTML=`<div class="pi-section"><h3>Identity</h3><div class="pi-grid"><div class="pi-stat"><span>Character</span><b>${esc(p.characterName||'Unknown')}</b></div><div class="pi-stat"><span>FiveM / Rockstar</span><b>${esc(p.rockstarName||p.name)}</b></div><div class="pi-stat"><span>Server ID</span><b>#${p.id}</b></div><div class="pi-stat"><span>Citizen ID</span><b>${esc(p.citizenid||'N/A')}</b></div></div></div><div class="pi-section"><h3>QBCore</h3><div class="pi-grid"><div class="pi-stat"><span>Job</span><b>${esc(p.jobLabel||p.jobName||'Unemployed')}</b></div><div class="pi-stat"><span>Grade</span><b>${esc(String(p.jobGradeName||p.jobGrade||0))} (${p.jobGrade||0})</b></div><div class="pi-stat"><span>Gang</span><b>${esc(p.gang||'None')}</b></div><div class="pi-stat"><span>Cash</span><b>${fmtMoney(p.cash)}</b></div><div class="pi-stat"><span>Bank</span><b>${fmtMoney(p.bank)}</b></div></div></div><div class="pi-section"><h3>Live Status</h3>${liveHtml}</div><div class="pi-section"><h3>Quick Actions</h3><div class="pi-actions"><button data-pi-act="goto">Go To</button><button data-pi-act="bring">Bring</button><button data-pi-act="spectate">Spectate</button><button data-pi-act="freeze">Freeze</button><button data-pi-act="unfreeze">Unfreeze</button><button data-pi-act="revive">Revive</button><button data-pi-act="heal">Heal</button><button data-pi-act="ragdoll">Ragdoll</button><button data-pi-extra="waypoint">Set Waypoint</button><button data-pi-extra="giveitem">Give Item</button><button data-pi-extra="setjob">Set Job</button><button data-pi-extra="transfer">Transfer Vehicle</button><button data-pi-extra="vehicles">Owned Vehicles</button><button data-pi-extra="money">Manage Money</button><button class="soft-danger" data-pi-extra="kick">Kick</button><button class="soft-danger" data-pi-act="kill">Kill</button></div></div>`;
  document.querySelector('#playerInfoModal').classList.remove('hidden')
 }
 document.addEventListener('click',e=>{const m=e.target.closest('[data-player-info]');if(m){const source = Array.isArray(players) ? players : (Array.isArray(players?.players) ? players.players : (Array.isArray(state?.players) ? state.players : []));const p=source.find(x=>Number(x.id)===Number(m.dataset.id));if(p)renderPlayerInfo(p);else toast('Unable to find that player in the current player list.');return}const a=e.target.closest('[data-pi-act]');if(a&&selectedPlayerInfo){const act=a.dataset.piAct;if(act==='goto'||act==='bring')post('teleportAction',{action:act,target:selectedPlayerInfo.id});else post('action',{action:act,target:selectedPlayerInfo.id});toast(`${act} sent.`)}});
@@ -311,6 +311,9 @@ document.addEventListener('click',e=>{
    if(existing) existing.click(); else toast('Transfer Vehicle action is unavailable.');
    return
  }
+ if(a==='vehicles'){
+   managementTarget=p;closePlayerInfo();openOwnedVehicles(p);return
+ }
  if(a==='money'){
    managementTarget=p;closePlayerInfo();
    document.querySelector('#moneyAmount').value='';
@@ -339,3 +342,31 @@ document.querySelector('#kickSubmit').onclick=async()=>{
  await post('kickPlayer',{target:managementTarget.id,reason});
  hideManagementModal('#kickModal');closePlayerInfo();toast('Kick sent.');
 };
+
+async function openOwnedVehicles(p){
+ managementTarget=p;
+ document.querySelector('#vehiclesTitle').textContent=`Owned Vehicles — ${p.characterName||p.name}`;
+ document.querySelector('#vehiclesBody').innerHTML='<div class="pi-note">Loading vehicles...</div>';
+ document.querySelector('#vehiclesModal').classList.remove('hidden');
+ let d={ok:false,vehicles:[]};try{d=await(await post('getOwnedVehicles',{target:p.id})).json()}catch(e){}
+ if(!d.ok){document.querySelector('#vehiclesBody').innerHTML='<div class="pi-note">Unable to load owned vehicles.</div>';return}
+ if(!d.vehicles.length){document.querySelector('#vehiclesBody').innerHTML='<div class="pi-note">This character has no vehicles in player_vehicles.</div>';return}
+ document.querySelector('#vehiclesBody').innerHTML=d.vehicles.map(v=>{
+  const state=Number(v.state)===1?'Stored':Number(v.state)===0?'Out':'Impounded / Other';
+  return `<div class="owned-vehicle-card"><div class="owned-vehicle-head"><div><b>${esc(v.vehicle||'Unknown')}</b><span>${esc(v.plate||'')}</span></div><strong>${state}</strong></div><div class="pi-grid"><div class="pi-stat"><span>Garage</span><b>${esc(v.garage||'None')}</b></div><div class="pi-stat"><span>Fuel</span><b>${Math.round(Number(v.fuel)||0)}%</b></div><div class="pi-stat"><span>Engine</span><b>${Math.round(Number(v.engine)||0)}</b></div><div class="pi-stat"><span>Body</span><b>${Math.round(Number(v.body)||0)}</b></div></div><div class="vehicle-garage-row"><input data-garage-input="${esc(v.plate)}" placeholder="Garage spawn name" value="${esc(v.garage||'')}"><button data-set-garage="${esc(v.plate)}">Move / Store</button></div></div>`
+ }).join('');
+}
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-set-garage]');
+ if(!b||!managementTarget)return;
+ const plate=b.dataset.setGarage;
+ const input=[...document.querySelectorAll('[data-garage-input]')].find(x=>x.dataset.garageInput===plate);
+ const garage=input?.value.trim();
+ if(!garage){toast('Enter a garage spawn name.');return}
+ await post('setVehicleGarage',{target:managementTarget.id,plate,garage});
+ toast(`Vehicle ${plate} moved to ${garage}.`);
+ setTimeout(()=>openOwnedVehicles(managementTarget),350);
+});
+document.querySelector('#vehiclesClose').onclick=()=>document.querySelector('#vehiclesModal').classList.add('hidden');
+document.querySelector('#vehiclesDone').onclick=()=>document.querySelector('#vehiclesModal').classList.add('hidden');
+document.querySelector('#vehiclesRefresh').onclick=()=>managementTarget&&openOwnedVehicles(managementTarget);

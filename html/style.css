@@ -50,3 +50,5 @@
 #moneyModal label,#kickModal label{display:flex;flex-direction:column;gap:7px;margin:12px 0;font-size:12px;opacity:.9}
 #moneyModal input,#moneyModal select,#kickModal textarea{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:inherit}
 #kickModal textarea{min-height:90px;resize:vertical}
+
+.owned-vehicles-modal{width:min(920px,92vw);max-height:86vh;overflow-y:auto}.owned-vehicles-body{display:flex;flex-direction:column;gap:12px;margin-top:12px}.owned-vehicle-card{padding:14px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.025)}.owned-vehicle-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.owned-vehicle-head div{display:flex;flex-direction:column;gap:3px}.owned-vehicle-head span{font-size:12px;opacity:.65}.owned-vehicle-head strong{font-size:12px}.vehicle-garage-row{display:flex;gap:8px;margin-top:12px}.vehicle-garage-row input{flex:1;min-width:0;padding:9px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:inherit}

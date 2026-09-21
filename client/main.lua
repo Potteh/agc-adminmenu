@@ -736,3 +736,24 @@ RegisterNetEvent('fadm:freshPlayerInfo',function(requestId,data)
  data.ok=true
  cb(data)
 end)
+
+local fadmVehicleRequests={}
+local fadmVehicleCounter=0
+RegisterNUICallback('getOwnedVehicles',function(data,cb)
+ fadmVehicleCounter=fadmVehicleCounter+1
+ local rid=tostring(GetGameTimer())..':veh:'..tostring(fadmVehicleCounter)
+ fadmVehicleRequests[rid]=cb
+ TriggerServerEvent('fadm:requestOwnedVehicles',data.target,rid)
+ SetTimeout(4000,function()
+  if fadmVehicleRequests[rid] then fadmVehicleRequests[rid]({ok=false,vehicles={}}) fadmVehicleRequests[rid]=nil end
+ end)
+end)
+RegisterNetEvent('fadm:ownedVehiclesResponse',function(rid,rows)
+ local cb=fadmVehicleRequests[tostring(rid)];if not cb then return end
+ fadmVehicleRequests[tostring(rid)]=nil
+ cb({ok=true,vehicles=rows or {}})
+end)
+RegisterNUICallback('setVehicleGarage',function(data,cb)
+ TriggerServerEvent('fadm:setVehicleGarage',data.target,data.plate,data.garage)
+ cb({ok=true})
+end)

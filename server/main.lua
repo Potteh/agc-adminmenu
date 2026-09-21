@@ -850,3 +850,33 @@ RegisterNetEvent('fadm:requestFreshPlayerInfo', function(target, requestId)
         bank=tonumber(money.bank) or 0
     })
 end)
+
+RegisterNetEvent('fadm:requestOwnedVehicles', function(target, requestId)
+    local src=source
+    if not isAdmin(src) then return end
+    target=tonumber(target)
+    local QBCore=exports['qb-core']:GetCoreObject()
+    local Player=target and QBCore.Functions.GetPlayer(target) or nil
+    if not Player then
+        TriggerClientEvent('fadm:ownedVehiclesResponse',src,requestId,{})
+        return
+    end
+    local cid=Player.PlayerData.citizenid
+    local rows=MySQL.query.await('SELECT vehicle, plate, garage, fuel, engine, body, state FROM player_vehicles WHERE citizenid = ? ORDER BY vehicle, plate',{cid}) or {}
+    TriggerClientEvent('fadm:ownedVehiclesResponse',src,requestId,rows)
+end)
+
+RegisterNetEvent('fadm:setVehicleGarage', function(target, plate, garage)
+    local src=source
+    if not isAdmin(src) then return end
+    target=tonumber(target)
+    plate=tostring(plate or ''):gsub('^%s+',''):gsub('%s+$','')
+    garage=tostring(garage or ''):gsub('^%s+',''):gsub('%s+$','')
+    if garage=='' or #garage>64 or plate=='' then notify(src,'Invalid garage or plate.') return end
+    local QBCore=exports['qb-core']:GetCoreObject()
+    local Player=target and QBCore.Functions.GetPlayer(target) or nil
+    if not Player then notify(src,'Player is no longer online.') return end
+    local changed=MySQL.update.await('UPDATE player_vehicles SET garage = ?, state = 1 WHERE citizenid = ? AND plate = ?',{garage,Player.PlayerData.citizenid,plate})
+    if changed and changed>0 then notify(src,('Moved %s to garage %s.'):format(plate,garage))
+    else notify(src,'Owned vehicle was not found.') end
+end)
