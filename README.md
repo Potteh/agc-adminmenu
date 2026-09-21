@@ -400,3 +400,12 @@ QBCore.Shared.Vehicles. Search by model, display name, brand, or category and
 spawn with one click. Set Job now loads QBCore.Shared.Jobs into a searchable
 selector and dynamically shows only valid grades for the selected job. The
 existing server-side job and vehicle validation remains authoritative.
+
+## v61 Spectate Upgrade + Roles
+Spectate restores the admin's original position on exit, displays a target HUD,
+and supports Left/Right target cycling plus ESC exit.
+
+ACE hierarchy: fivem.moderator < fivem.admin < fivem.superadmin. Existing
+fivem.admin setups remain Admin-level. Moderators are blocked server-side from
+ban/kill/fire/explode-vehicle, unban, and server announcements. Admin and Super
+Admin retain those functions. All staff still require Admin Duty.

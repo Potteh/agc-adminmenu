@@ -1,6 +1,7 @@
 local menuOpen = false
 local spectating = false
 local spectateTarget = nil
+local spectateReturn = nil
 
 local function setMenu(state)
     menuOpen = state
@@ -193,42 +194,27 @@ RegisterNetEvent('fadm:spawnVehicle', function(modelName)
     SetModelAsNoLongerNeeded(model)
 end)
 
-RegisterNetEvent('fadm:spectate', function(target)
-    if spectating then return end
-
-    local targetPed = GetPlayerPed(GetPlayerFromServerId(target))
-    if not DoesEntityExist(targetPed) then
-        TriggerEvent('fadm:notify', 'Target is no longer available.')
-        return
-    end
-
-    spectating = true
-    spectateTarget = target
-    local myPed = PlayerPedId()
-
-    SetEntityVisible(myPed, false, false)
-    SetEntityInvincible(myPed, true)
-    FreezeEntityPosition(myPed, true)
-    SetEntityCollision(myPed, false, false)
-
-    NetworkSetInSpectatorMode(true, targetPed)
-    SendNUIMessage({ action = 'spectating', target = target })
-end)
-
-local function stopSpectate()
-    if not spectating then return end
-
-    NetworkSetInSpectatorMode(false, 0)
-    local ped = PlayerPedId()
-    SetEntityVisible(ped, true, false)
-    SetEntityInvincible(ped, false)
-    FreezeEntityPosition(ped, false)
-    SetEntityCollision(ped, true, true)
-
-    spectating = false
-    spectateTarget = nil
-    SendNUIMessage({ action = 'spectateOff' })
+local function beginSpectate(target)
+ local player=GetPlayerFromServerId(tonumber(target));if player==-1 then TriggerEvent('fadm:notify','Target is no longer available.');return end
+ local tp=GetPlayerPed(player);if not DoesEntityExist(tp) then return end
+ local ped=PlayerPedId()
+ if not spectating then local v=GetEntityCoords(ped);spectateReturn={x=v.x,y=v.y,z=v.z,h=GetEntityHeading(ped)} else NetworkSetInSpectatorMode(false,0) end
+ spectating=true;spectateTarget=tonumber(target);SetEntityVisible(ped,false,false);SetEntityInvincible(ped,true);FreezeEntityPosition(ped,true);SetEntityCollision(ped,false,false)
+ NetworkSetInSpectatorMode(true,tp);SendNUIMessage({action='spectating',target=spectateTarget,name=GetPlayerName(player) or ('ID '..spectateTarget)})
 end
+RegisterNetEvent('fadm:spectate',function(target) beginSpectate(target) end)
+local function stopSpectate()
+ if not spectating then return end
+ NetworkSetInSpectatorMode(false,0);local ped=PlayerPedId();SetEntityVisible(ped,true,false);SetEntityInvincible(ped,false);FreezeEntityPosition(ped,false);SetEntityCollision(ped,true,true)
+ if spectateReturn then SetEntityCoordsNoOffset(ped,spectateReturn.x,spectateReturn.y,spectateReturn.z,false,false,false);SetEntityHeading(ped,spectateReturn.h or 0.0) end
+ spectating=false;spectateTarget=nil;spectateReturn=nil;SendNUIMessage({action='spectateOff'})
+end
+local function cycleSpectate(dir)
+ local ids={};for _,p in ipairs(GetActivePlayers()) do local id=GetPlayerServerId(p);if id~=GetPlayerServerId(PlayerId()) then ids[#ids+1]=id end end
+ table.sort(ids);if #ids==0 then return end;local idx=1;for i,id in ipairs(ids) do if id==spectateTarget then idx=i break end end
+ idx=((idx-1+dir)%#ids)+1;beginSpectate(ids[idx])
+end
+RegisterNUICallback('spectateCycle',function(data,cb) cycleSpectate(tonumber(data.dir) or 1);cb({ok=true}) end)
 
 RegisterNUICallback('close', function(_, cb)
     setMenu(false)

@@ -28,3 +28,7 @@ Config.RestartUseQuitCommand = false
 Config.AdminWorldSyncIntervalMs = 2000
 
 Config.MaxAdminLogs = 1000
+
+-- v61 staff role hierarchy. Existing fivem.admin remains Admin-level.
+Config.RoleAces = { moderator='fivem.moderator', admin='fivem.admin', superadmin='fivem.superadmin' }
+Config.RoleLabels = { moderator='Moderator', admin='Admin', superadmin='Super Admin' }

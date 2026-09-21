@@ -7,11 +7,21 @@ local reports = {}
 local nextReportId = 1
 
 local adminDuty = {}
-local function hasAdminAce(src)
-    return src == 0 or IsPlayerAceAllowed(src, Config.AdminAce)
+local roleRank={moderator=1,admin=2,superadmin=3}
+local function getAdminRole(src)
+    if src==0 then return 'superadmin' end
+    local a=Config.RoleAces or {}
+    if a.superadmin and IsPlayerAceAllowed(src,a.superadmin) then return 'superadmin' end
+    if (a.admin and IsPlayerAceAllowed(src,a.admin)) or IsPlayerAceAllowed(src,Config.AdminAce) then return 'admin' end
+    if a.moderator and IsPlayerAceAllowed(src,a.moderator) then return 'moderator' end
 end
-local function isAdmin(src)
-    return src == 0 or (hasAdminAce(src) and adminDuty[src] == true)
+local function hasAdminAce(src) return src==0 or getAdminRole(src)~=nil end
+local function hasRole(src,min) local r=getAdminRole(src);return src==0 or (r and (roleRank[r] or 0)>=(roleRank[min] or 99)) end
+local function isAdmin(src) return src==0 or (hasAdminAce(src) and adminDuty[src]==true) end
+local function canAction(src,a)
+    if not isAdmin(src) then return false end
+    if ({ban=true,kill=true,fire=true,explodevehicle=true})[a] and not hasRole(src,'admin') then return false end
+    return true
 end
 
 local function notify(src, msg)
@@ -188,18 +198,18 @@ end)
 RegisterNetEvent('fadm:getData', function()
  local src=source;if not hasAdminAce(src) then return end
  local onDuty=adminDuty[src]==true
- TriggerClientEvent('fadm:openData',src,{players=onDuty and playerList() or {},reports=onDuty and reports or {},onDuty=onDuty})
+ TriggerClientEvent('fadm:openData',src,{players=onDuty and playerList() or {},reports=onDuty and reports or {},onDuty=onDuty,role=getAdminRole(src)})
 end)
 RegisterNetEvent('fadm:refresh', function()
  local src=source;if not hasAdminAce(src) then return end
  local onDuty=adminDuty[src]==true
- TriggerClientEvent('fadm:updateData',src,{players=onDuty and playerList() or {},reports=onDuty and reports or {},onDuty=onDuty})
+ TriggerClientEvent('fadm:updateData',src,{players=onDuty and playerList() or {},reports=onDuty and reports or {},onDuty=onDuty,role=getAdminRole(src)})
 end)
 
 RegisterNetEvent('fadm:action', function(action, target, reason)
     local src = source
-    if not isAdmin(src) then
-        print(('^1[FiveM Admin]^7 Unauthorized action from %s'):format(src))
+    if not canAction(src,tostring(action or '')) then
+        notify(src,'Your staff role does not have permission for that action.')
         return
     end
 
@@ -966,7 +976,7 @@ RegisterNetEvent('fadm:toggleDuty',function()
  adminDuty[src]=not adminDuty[src]
  addAdminLog(src,nil,adminDuty[src] and 'Admin Duty On' or 'Admin Duty Off','Duty status changed')
  TriggerClientEvent('fadm:dutyState',src,adminDuty[src])
- TriggerClientEvent('fadm:updateData',src,{players=adminDuty[src] and playerList() or {},reports=adminDuty[src] and reports or {},onDuty=adminDuty[src]})
+ TriggerClientEvent('fadm:updateData',src,{players=adminDuty[src] and playerList() or {},reports=adminDuty[src] and reports or {},onDuty=adminDuty[src],role=getAdminRole(src)})
  notify(src,adminDuty[src] and 'You are now on admin duty.' or 'You are now off admin duty.')
  broadcastDutyRoster()
 end)
@@ -1017,7 +1027,7 @@ RegisterNetEvent('fadm:requestDutyRoster',function()
 end)
 
 RegisterNetEvent('fadm:sendAnnouncement',function(kind,message)
- local src=source;if not isAdmin(src) then return end
+ local src=source;if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required.') return end
  kind=tostring(kind or 'normal'):lower()
  local allowed={normal=true,warning=true,emergency=true}
  if not allowed[kind] then kind='normal' end
@@ -1036,7 +1046,7 @@ RegisterNetEvent('fadm:requestBans',function()
  TriggerClientEvent('fadm:bansData',src,bans)
 end)
 RegisterNetEvent('fadm:unban',function(banId)
- local src=source;if not isAdmin(src) then return end
+ local src=source;if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required.') return end
  banId=tostring(banId or '')
  for i=#bans,1,-1 do
   if tostring(bans[i].id)==banId then

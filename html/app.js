@@ -594,3 +594,6 @@ window.addEventListener('message',e=>{
  if(m.action==='vehicleCatalog'){vehicleCatalog=Array.isArray(m.vehicles)?m.vehicles:[];renderVehicleBrowser()}
  else if(m.action==='jobCatalog'){jobCatalog=Array.isArray(m.jobs)?m.jobs:[];renderJobOptions()}
 });
+
+window.addEventListener('message',e=>{const m=e.data||{};if(m.action==='spectating'){const x=$('#spectateHud');$('#spectateName').textContent=`${m.name||'Player'} (#${m.target})`;x.classList.remove('hidden')}else if(m.action==='spectateOff')$('#spectateHud')?.classList.add('hidden')});
+document.addEventListener('keydown',e=>{if($('#spectateHud')?.classList.contains('hidden'))return;if(e.key==='ArrowLeft'){e.preventDefault();post('spectateCycle',{dir:-1})}else if(e.key==='ArrowRight'){e.preventDefault();post('spectateCycle',{dir:1})}});
