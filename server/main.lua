@@ -1006,7 +1006,7 @@ local function getOnDutyAdmins()
  for _,id in ipairs(GetPlayers()) do
   local n=tonumber(id)
   if n and hasAdminAce(n) and adminDuty[n]==true then
-   rows[#rows+1]={id=n,name=GetPlayerName(n) or ('ID '..n)}
+   rows[#rows+1]={id=n,name=GetPlayerName(n) or ('ID '..n),role=getAdminRole(n),roleLabel=(Config.RoleLabels and Config.RoleLabels[getAdminRole(n)]) or getAdminRole(n),onDuty=true}
   end
  end
  table.sort(rows,function(a,b)return a.id<b.id end)
@@ -1108,4 +1108,20 @@ RegisterNetEvent('fadm:requestJobCatalog',function()
  end
  table.sort(rows,function(a,b)return a.label:lower()<b.label:lower() end)
  TriggerClientEvent('fadm:jobCatalog',src,rows)
+end)
+
+local function getStaffList()
+ local rows={}
+ for _,id in ipairs(GetPlayers()) do
+  local n=tonumber(id);local role=n and getAdminRole(n)
+  if role then
+   rows[#rows+1]={id=n,name=GetPlayerName(n) or ('ID '..n),role=role,roleLabel=(Config.RoleLabels and Config.RoleLabels[role]) or role,onDuty=adminDuty[n]==true}
+  end
+ end
+ table.sort(rows,function(a,b)return (roleRank[a.role] or 0)>(roleRank[b.role] or 0) or ((roleRank[a.role] or 0)==(roleRank[b.role] or 0) and a.id<b.id) end)
+ return rows
+end
+RegisterNetEvent('fadm:requestStaffList',function()
+ local src=source;if not isAdmin(src) or not hasRole(src,'superadmin') then notify(src,'Super Admin role required.') return end
+ TriggerClientEvent('fadm:staffList',src,getStaffList())
 end)

@@ -24,10 +24,11 @@
         <button class="nav" data-tab="bans">⊘ <span>Bans</span></button>
         <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
         <button class="nav" data-tab="adminlogs">☷ <span>Admin Logs</span></button>
+        <button class="nav superadmin-only" data-tab="staff">★ <span>Staff</span></button>
         <button class="nav" data-tab="developer">⌘ <span>Developer</span></button>
         <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
       </nav>
-      <div class="side-foot"><span class="online-dot"></span> Admin session active</div>
+      <div class="side-foot"><span class="online-dot"></span> <span id="staffRoleLabel">Staff</span> session active</div>
     </aside>
 
     <section class="workspace">
@@ -97,7 +98,8 @@
         </section>
 
         <section id="adminlogs" class="page"><div class="section-head"><div><h2>Admin Logs</h2><p>Persistent audit trail for administrative actions.</p></div><button id="refreshAdminLogs" class="primary">Refresh Logs</button></div><div class="toolbar"><input id="adminLogSearch" type="text" placeholder="Search admin, player, action, details..."><select id="adminLogFilter"><option value="">All Actions</option></select></div><div id="adminLogList" class="admin-log-list"><div class="pi-note">Open this page to load logs.</div></div></section>
-<section id="developer" class="page">
+<section id="staff" class="page"><div class="section-head"><div><h2>Staff Management</h2><p>Connected staff, roles, and current duty status.</p></div><button id="refreshStaff">Refresh</button></div><div id="staffList" class="cards"><div class="muted">Open this page to load staff.</div></div></section>
+        <section id="developer" class="page">
           <div class="section-head"><div><h2>Developer Tools</h2><p>Quick utilities for building and configuring server resources.</p></div></div>
           <div class="world-grid">
             <article class="world-card developer-card">

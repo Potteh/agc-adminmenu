@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const app=$('#app'); let state={players:[],reports:[]}; let pending=null; let playerReportMode=false;
+const app=$('#app'); let state={players:[],reports:[]}; let pending=null; let playerReportMode=false; let adminRole='admin';
 const resource=()=>GetParentResourceName();
 function post(endpoint,body={}){return fetch(`https://${resource()}/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
@@ -13,7 +13,7 @@ function showAdminReportAlert(report){
  host.appendChild(el);
  const remove=()=>{if(el.isConnected)el.remove()};el.querySelector('.ara-dismiss').onclick=remove;setTimeout(remove,12000);
 }
-const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],bans:['Bans','Search and manage active bans'],world:['World Controls','Server-wide time, weather and environment effects'],adminlogs:['Admin Logs','Persistent audit trail for administrative actions'],developer:['Developer','Coordinates and development utilities'],reportForm:['Submit Report','Send a report to the administration team']};
+const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],bans:['Bans','Search and manage active bans'],world:['World Controls','Server-wide time, weather and environment effects'],staff:['Staff Management','Connected staff roles and duty status'],adminlogs:['Admin Logs','Persistent audit trail for administrative actions'],developer:['Developer','Coordinates and development utilities'],reportForm:['Submit Report','Send a report to the administration team']};
 function go(tab){
  const meta=titles[tab]||[String(tab||'Admin').replace(/([A-Z])/g,' $1').trim()||'Admin','Administration controls'];
  $$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
@@ -87,7 +87,7 @@ $('#restartSequenceBtn').onclick=()=>{
 function formatRestartTime(seconds){seconds=Math.max(0,Number(seconds)||0);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`}
 
 window.addEventListener('message',e=>{const m=e.data;if(m.action==='openReportForm'){playerReportMode=true;app.classList.remove('hidden');go('reportForm');$('#reportTarget').value='';$('#reportMessage').value='';$('#charCount').textContent='0 / 500';setTimeout(()=>$('#reportTarget').focus(),0)}
- else if(m.action==='show'){playerReportMode=false;app.classList.remove('hidden');if(m.data){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}}else if(m.action==='hide'){playerReportMode=false;app.classList.add('hidden')}else if(m.action==='data'){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();showAdminReportAlert(m.report)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
+ else if(m.action==='show'){playerReportMode=false;app.classList.remove('hidden');if(m.data){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}if(m.data.role){adminRole=m.data.role;applyRoleUI()}render()}}else if(m.action==='hide'){playerReportMode=false;app.classList.add('hidden')}else if(m.action==='data'){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}if(m.data.role){adminRole=m.data.role;applyRoleUI()}render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();showAdminReportAlert(m.report)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#confirm').classList.contains('hidden')){$('#confirm').classList.add('hidden');pending=null}else if(e.key==='Escape')post('close')});
 
 document.addEventListener('click', async (e) => {
@@ -597,3 +597,20 @@ window.addEventListener('message',e=>{
 
 window.addEventListener('message',e=>{const m=e.data||{};if(m.action==='spectating'){const x=$('#spectateHud');$('#spectateName').textContent=`${m.name||'Player'} (#${m.target})`;x.classList.remove('hidden')}else if(m.action==='spectateOff')$('#spectateHud')?.classList.add('hidden')});
 document.addEventListener('keydown',e=>{if($('#spectateHud')?.classList.contains('hidden'))return;if(e.key==='ArrowLeft'){e.preventDefault();post('spectateCycle',{dir:-1})}else if(e.key==='ArrowRight'){e.preventDefault();post('spectateCycle',{dir:1})}});
+
+const roleLevel={moderator:1,admin:2,superadmin:3};
+function applyRoleUI(){
+ const level=roleLevel[adminRole]||1;
+ const lab=$('#staffRoleLabel');if(lab)lab.textContent=adminRole==='superadmin'?'Super Admin':adminRole==='admin'?'Admin':'Moderator';
+ $$('.superadmin-only').forEach(x=>x.classList.toggle('role-hidden',level<3));
+ // High-impact controls are hidden for moderators; server checks remain authoritative.
+ $$('[data-act="ban"],[data-act="kill"],[data-act="fire"],[data-act="explodevehicle"],#announcementBtn,[data-tab="bans"]').forEach(x=>x.classList.toggle('role-hidden',level<2));
+}
+let staffRows=[];
+function renderStaff(){
+ const box=$('#staffList');if(!box)return;
+ box.innerHTML=staffRows.length?staffRows.map(x=>`<article class="player-card"><div class="player-top"><div><b>${esc(x.name)}</b><div class="muted">Server ID #${x.id}</div></div><span class="badge ${x.onDuty?'open':'closed'}">${x.onDuty?'ON DUTY':'OFF DUTY'}</span></div><div class="info-grid"><div><span>ROLE</span><b>${esc(x.roleLabel||x.role)}</b></div><div><span>ACE LEVEL</span><b>${esc(x.role)}</b></div></div></article>`).join(''):'<div class="player-card muted">No connected staff found.</div>';
+}
+$('#refreshStaff').onclick=()=>post('getStaffList',{});
+document.addEventListener('click',e=>{if(e.target.closest('[data-tab="staff"]'))setTimeout(()=>post('getStaffList',{}),0)});
+window.addEventListener('message',e=>{const m=e.data||{};if(m.action==='staffList'){staffRows=Array.isArray(m.staff)?m.staff:[];renderStaff()}});

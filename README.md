@@ -409,3 +409,11 @@ ACE hierarchy: fivem.moderator < fivem.admin < fivem.superadmin. Existing
 fivem.admin setups remain Admin-level. Moderators are blocked server-side from
 ban/kill/fire/explode-vehicle, unban, and server announcements. Admin and Super
 Admin retain those functions. All staff still require Admin Duty.
+
+## v62 Staff Management + Role-Aware UI
+Super Admins now have a Staff page listing connected staff, ACE role, server ID,
+and current duty status. The sidebar footer displays the current user's role.
+Moderator UI hides Admin-only destructive controls and Ban/Announcement access;
+the server-side v61 permission checks remain authoritative. The Staff page is
+visible only to Super Admins and its server endpoint independently requires
+Super Admin + on-duty authorization.
