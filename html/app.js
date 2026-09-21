@@ -636,3 +636,29 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-tab="staff"]'))
 window.addEventListener('message',e=>{const m=e.data||{};if(m.action==='staffList'){staffRows=Array.isArray(m.staff)?m.staff:[];renderStaff()}});
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-takeover-report]');if(b){post('takeoverReport',{id:Number(b.dataset.takeoverReport)});toast(`Taking over report #${b.dataset.takeoverReport}...`)}})
+
+
+let activeRadios=[];
+function renderActiveRadios(data){
+ const available=data?.available===true;
+ activeRadios=Array.isArray(data?.radios)?data.radios:[];
+ const count=document.querySelector('#radioCount');if(count)count.textContent=activeRadios.length;
+ const status=document.querySelector('#radioStatus');
+ const box=document.querySelector('#radioList');
+ if(!status||!box)return;
+ if(!available){status.textContent='agc-carradio is not currently available or started.';box.innerHTML='';return}
+ status.textContent=activeRadios.length?`${activeRadios.length} active vehicle radio${activeRadios.length===1?'':'s'}.`:'No vehicle radios are currently active.';
+ box.innerHTML=activeRadios.map(r=>{
+   const source=r.source==='youtube'?(r.videoId?`YouTube · ${esc(r.videoId)}`:'YouTube'):(r.stationName?`${esc(r.stationName)}${r.genre?` · ${esc(r.genre)}`:''}`:'Live Stream');
+   const occupants=(r.occupants||[]).length?(r.occupants||[]).map(o=>`<div class="radio-occupant"><b>${esc(o.characterName||'Unknown')}</b><span>FiveM / Rockstar: ${esc(o.rockstarName||'Unknown')} · ID #${o.id}</span></div>`).join(''):'<div class="muted">No player occupants detected.</div>';
+   return `<article class="radio-card"><div class="radio-head"><div><span class="mini-badge">NET ${r.netId}</span><span class="mini-badge">${esc(String(r.plate||'No plate'))}</span><h3>${source}</h3><p>${r.playing?'Playing':'Paused'} · Volume ${Number(r.volume||0)}%${r.position!=null?` · ${Math.floor(Number(r.position)||0)}s`:''}</p></div><button class="soft-danger admin-role-only" data-stop-radio="${r.netId}">Stop Radio</button></div><div class="radio-occupants"><span class="action-group-title">Vehicle Occupants</span>${occupants}</div></article>`;
+ }).join('');
+ applyRoleUI();
+}
+document.querySelector('#refreshRadios').onclick=()=>post('getActiveRadios',{});
+document.querySelector('#stopAllRadios').onclick=()=>post('stopAllActiveRadios',{});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-stop-radio]');if(b)post('stopActiveRadio',{netId:Number(b.dataset.stopRadio)})});
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tab="radios"],[data-jump="radios"]');if(b)setTimeout(()=>post('getActiveRadios',{}),0)});
+
+window.addEventListener('message',e=>{if(e.data?.action==='activeRadios')renderActiveRadios(e.data.data||{})});

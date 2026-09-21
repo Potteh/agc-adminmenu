@@ -24,6 +24,7 @@
         <button class="nav" data-tab="bans">⊘ <span>Bans</span></button>
         <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
         <button class="nav" data-tab="adminlogs">☷ <span>Admin Logs</span></button>
+        <button class="nav" data-tab="radios">♫ <span>Active Radios</span><b id="radioCount">0</b></button>
         <button class="nav superadmin-only" data-tab="staff">★ <span>Staff</span></button>
         <button class="nav" data-tab="developer">⌘ <span>Developer</span></button>
         <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
@@ -95,6 +96,12 @@
             <article class="world-card restart-card"><div class="world-icon">⚠</div><h3>Restart Sequence</h3><p>Start a 2-minute severe-thunderstorm warning with a storm siren before the configured server restart action.</p><div class="world-actions"><button id="restartSequenceBtn" class="danger">Start 2-Minute Restart</button></div></article>
             <article class="world-card earthquake-card"><div class="world-icon">⌁</div><h3>Earthquake</h3><p>Shake every player's camera for 15 seconds. Players on foot may lose their footing and fall over.</p><div class="world-actions"><button id="earthquakeBtn" class="danger">Initiate Earthquake</button></div></article>
           </div>
+        </section>
+
+        <section id="radios" class="page">
+          <div class="section-head"><div><h2>Active Vehicle Radios</h2><p>Monitor active agc-carradio sessions, occupants, and playback.</p></div><div class="inline"><button id="refreshRadios">Refresh</button><button id="stopAllRadios" class="danger admin-role-only">Stop All Radios</button></div></div>
+          <div id="radioStatus" class="pi-note">Open this page to load active radios.</div>
+          <div id="radioList" class="cards"></div>
         </section>
 
         <section id="adminlogs" class="page"><div class="section-head"><div><h2>Admin Logs</h2><p>Persistent audit trail for administrative actions.</p></div><button id="refreshAdminLogs" class="primary">Refresh Logs</button></div><div class="toolbar"><input id="adminLogSearch" type="text" placeholder="Search admin, player, action, details..."><select id="adminLogFilter"><option value="">All Actions</option></select></div><div id="adminLogList" class="admin-log-list"><div class="pi-note">Open this page to load logs.</div></div></section>

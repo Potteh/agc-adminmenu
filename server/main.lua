@@ -1065,3 +1065,70 @@ RegisterNetEvent('fadm:requestStaffList',function()
  local src=source;if not isAdmin(src) or not hasRole(src,'superadmin') then notify(src,'Super Admin role required.') return end
  TriggerClientEvent('fadm:staffList',src,getStaffList())
 end)
+
+
+local function radioResourceReady()
+ return GetResourceState('acg_radio') == 'started'
+end
+
+local function getRadioOccupants(netId)
+ local occupants={}
+ local vehicle=NetworkGetEntityFromNetworkId(tonumber(netId) or 0)
+ if not vehicle or vehicle==0 or not DoesEntityExist(vehicle) then return occupants end
+ local QBCore=exports['qb-core']:GetCoreObject()
+ for _,id in ipairs(GetPlayers()) do
+  local pid=tonumber(id)
+  local ped=pid and GetPlayerPed(pid) or 0
+  if ped and ped~=0 and GetVehiclePedIsIn(ped,false)==vehicle then
+   local platform=GetPlayerName(pid) or ('Player '..pid)
+   local character='Character not loaded'
+   local Player=QBCore.Functions.GetPlayer(pid)
+   if Player and Player.PlayerData and Player.PlayerData.charinfo then
+    local ci=Player.PlayerData.charinfo
+    local full=(tostring(ci.firstname or '')..' '..tostring(ci.lastname or '')):gsub('^%s+',''):gsub('%s+$','')
+    if full~='' then character=full end
+   end
+   occupants[#occupants+1]={id=pid,characterName=character,rockstarName=platform}
+  end
+ end
+ table.sort(occupants,function(a,b)return a.id<b.id end)
+ return occupants
+end
+
+local function buildAdminRadioList()
+ if not radioResourceReady() then return {available=false,radios={}} end
+ local ok,radios=pcall(function() return exports['acg_radio']:GetActiveRadios() end)
+ if not ok or type(radios)~='table' then return {available=false,radios={}} end
+ for _,radio in ipairs(radios) do radio.occupants=getRadioOccupants(radio.netId) end
+ return {available=true,radios=radios}
+end
+
+RegisterNetEvent('fadm:requestActiveRadios',function()
+ local src=source
+ if not isAdmin(src) then return end
+ TriggerClientEvent('fadm:activeRadios',src,buildAdminRadioList())
+end)
+
+RegisterNetEvent('fadm:stopActiveRadio',function(netId)
+ local src=source
+ if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required.') return end
+ netId=tonumber(netId)
+ if not netId or netId<=0 or not radioResourceReady() then notify(src,'Radio resource is unavailable.') return end
+ local ok,stopped=pcall(function() return exports['acg_radio']:StopVehicleRadio(netId) end)
+ if not ok or not stopped then notify(src,'No active radio found for that vehicle.') return end
+ addAdminLog(src,nil,'Stop Vehicle Radio',('Network ID %d'):format(netId))
+ notify(src,'Vehicle radio stopped.')
+ TriggerClientEvent('fadm:activeRadios',src,buildAdminRadioList())
+end)
+
+RegisterNetEvent('fadm:stopAllActiveRadios',function()
+ local src=source
+ if not isAdmin(src) or not hasRole(src,'admin') then notify(src,'Admin role required.') return end
+ if not radioResourceReady() then notify(src,'Radio resource is unavailable.') return end
+ local ok,count=pcall(function() return exports['acg_radio']:StopAllRadios() end)
+ if not ok then notify(src,'Could not stop active radios.') return end
+ addAdminLog(src,nil,'Stop All Radios',('Stopped %d active radio(s)'):format(tonumber(count) or 0))
+ notify(src,('Stopped %d active radio(s).'):format(tonumber(count) or 0))
+ TriggerClientEvent('fadm:activeRadios',src,buildAdminRadioList())
+end)
+

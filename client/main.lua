@@ -877,6 +877,23 @@ RegisterNUICallback('getJobCatalog',function(_,cb) TriggerServerEvent('fadm:requ
 RegisterNetEvent('fadm:vehicleCatalog',function(rows) SendNUIMessage({action='vehicleCatalog',vehicles=rows}) end)
 RegisterNetEvent('fadm:jobCatalog',function(rows) SendNUIMessage({action='jobCatalog',jobs=rows}) end)
 
+
+RegisterNUICallback('getActiveRadios',function(_,cb)
+ TriggerServerEvent('fadm:requestActiveRadios')
+ cb({ok=true})
+end)
+RegisterNUICallback('stopActiveRadio',function(data,cb)
+ TriggerServerEvent('fadm:stopActiveRadio',tonumber(data.netId))
+ cb({ok=true})
+end)
+RegisterNUICallback('stopAllActiveRadios',function(_,cb)
+ TriggerServerEvent('fadm:stopAllActiveRadios')
+ cb({ok=true})
+end)
+RegisterNetEvent('fadm:activeRadios',function(data)
+ SendNUIMessage({action='activeRadios',data=data})
+end)
+
 RegisterNUICallback('getStaffList',function(_,cb) TriggerServerEvent('fadm:requestStaffList');cb({ok=true}) end)
 RegisterNetEvent('fadm:staffList',function(rows) SendNUIMessage({action='staffList',staff=rows}) end)
 

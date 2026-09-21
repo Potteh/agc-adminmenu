@@ -493,3 +493,13 @@ allowed it to render above the Manage Player overlay. Lowered the Players toolba
 stacking level and explicitly placed modal/drawer overlays above it. This keeps
 the search bar visible at the top of Players while completely hiding it whenever
 Manage Player is open.
+
+## v72 agc-carradio integration restored
+Restores the optional admin integration using the server exports documented by
+the current `agc_radio` resource. Adds an Active Radios page showing network ID,
+vehicle plate, playback source/state/volume, and current vehicle occupants with
+QBCore character name, FiveM/Rockstar name, and server ID. Admin+ can stop one
+radio or all active radios. The integration remains optional; the admin menu
+continues to function if `agc_radio` is stopped or absent.
+
+Built from the confirmed-working v71 admin-menu baseline.

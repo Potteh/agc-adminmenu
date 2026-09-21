@@ -139,3 +139,13 @@ body.admin-off-duty #dashboard .stat,body.admin-off-duty #dashboard .quick-grid 
   position:relative;
   z-index:1001 !important;
 }
+
+/* v72 agc-carradio integration */
+.radio-card{background:#111923;border:1px solid #263445;border-radius:10px;padding:16px;margin-bottom:10px}
+.radio-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.radio-head h3{margin:9px 0 4px}
+.radio-head p{margin:0;color:#8e9bad}
+.radio-occupants{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}
+.radio-occupant{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.radio-occupant:last-child{border-bottom:0}
+.radio-occupant span{color:#8e9bad;font-size:12px;text-align:right}
