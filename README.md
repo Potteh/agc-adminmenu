@@ -251,3 +251,8 @@ insertion did not survive the generated player-card markup.
 
 ## v32 Developer expansion
 Added Noclip, Invisible Mode, Teleport to Waypoint, and Entity Debugger to Developer Tools.
+
+## v35 scrolling fix
+Adds an explicit bounded scrollbar to the admin workspace and a FiveM NUI wheel
+fallback that directly scrolls the main content container. Page Up/Page Down,
+Home, and End are also supported while the menu is open.

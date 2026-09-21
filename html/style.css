@@ -23,3 +23,24 @@
 .dev-status{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04)}.dev-status span{color:#8f9bab;font-size:12px;text-transform:uppercase}.dev-status strong{font-size:13px}
 
 .entity-debug{font-family:monospace;font-size:12px;line-height:1.7;padding:12px 14px;margin:14px 0;border-radius:8px;background:rgba(255,255,255,.04);min-height:44px}
+
+
+/* v35: explicit NUI content scrolling */
+.workspace {
+  min-height: 0;
+  overflow: hidden;
+}
+.workspace main {
+  min-height: 0;
+  max-height: calc(90vh - 84px);
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  scrollbar-gutter: stable;
+  padding-bottom: 60px;
+}
+.workspace main::-webkit-scrollbar { width: 11px; }
+.workspace main::-webkit-scrollbar-track { background: rgba(255,255,255,.035); }
+.workspace main::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.22);
+  border-radius: 10px;
+}

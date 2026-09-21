@@ -233,3 +233,35 @@ $('#noclipBtn').onclick=async()=>{const d=await(await post('toggleNoclip')).json
 $('#invisibleBtn').onclick=async()=>{const d=await(await post('toggleInvisible')).json();invisibleEnabled=!!d.enabled;$('#invisibleStatus').textContent=invisibleEnabled?'ON':'OFF';$('#invisibleBtn').textContent=invisibleEnabled?'Become Visible':'Become Invisible';toast(`Invisible Mode ${invisibleEnabled?'enabled':'disabled'}.`)};
 $('#tpWaypointBtn').onclick=async()=>{const d=await(await post('teleportWaypoint')).json();toast(d.ok?'Teleported to waypoint.':d.message)};
 $('#inspectEntityBtn').onclick=async()=>{const d=await(await post('inspectEntity')).json();if(!d.ok){$('#entityDebug').textContent=d.message;return}$('#entityDebug').innerHTML=`<b>${esc(d.type)}</b><br>Entity: ${d.entity}<br>Network ID: ${d.networkId}<br>Model Hash: ${d.model}<br>Coords: ${Number(d.x).toFixed(3)}, ${Number(d.y).toFixed(3)}, ${Number(d.z).toFixed(3)}<br>Heading: ${Number(d.heading).toFixed(3)}<br>Health: ${d.health}`};
+
+
+// v35: FiveM NUI wheel fallback.
+// Some CEF/FiveM setups do not naturally scroll the nested workspace.
+// Route wheel input directly to the admin content container.
+(() => {
+  const adminMain = document.querySelector('.workspace main');
+  if (!adminMain) return;
+
+  document.addEventListener('wheel', (event) => {
+    if (document.getElementById('app')?.classList.contains('hidden')) return;
+    const modalOpen = document.querySelector('.modal:not(.hidden)');
+    if (modalOpen && modalOpen.contains(event.target)) return;
+    adminMain.scrollTop += event.deltaY;
+    event.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('keydown', (event) => {
+    if (document.getElementById('app')?.classList.contains('hidden')) return;
+    if (event.key === 'PageDown') {
+      adminMain.scrollBy({top: Math.max(250, adminMain.clientHeight * .75), behavior: 'smooth'});
+      event.preventDefault();
+    } else if (event.key === 'PageUp') {
+      adminMain.scrollBy({top: -Math.max(250, adminMain.clientHeight * .75), behavior: 'smooth'});
+      event.preventDefault();
+    } else if (event.key === 'Home') {
+      adminMain.scrollTop = 0;
+    } else if (event.key === 'End') {
+      adminMain.scrollTop = adminMain.scrollHeight;
+    }
+  });
+})();
