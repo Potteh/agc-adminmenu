@@ -443,3 +443,10 @@ Fixed Entity Debugger v2 failing on local/non-networked entities. Network native
 are now called only when the inspected entity is actually networked and are
 additionally protected with pcall. Local map objects now return Networked: No,
 Network ID: 0, and Owner: N/A instead of crashing the NUI callback.
+
+## v66 Entity Debugger safe-mode fix
+The inspect callback was rewritten around StartShapeTestLosProbe and a conservative
+native set. Network ID/owner lookup and other potentially unsafe lookup natives
+were removed from the inspection path because native exceptions cannot be caught
+reliably by Lua pcall once the game native itself faults. This version prioritizes
+a debugger that works reliably for local map objects, peds, and vehicles.
