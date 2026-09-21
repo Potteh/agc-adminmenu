@@ -347,3 +347,11 @@ Money so the existing warnings handler is reachable.
 Fixed a data-action mismatch: the Manage Player button sends `warnings`, while
 the click handler in v50/v51 was checking for `warn`. The handler now matches
 `warnings`, so clicking the button opens the existing warnings modal.
+
+## v53 Always-Visible Admin Report Alerts
+When a player submits a report, every connected ACE-authorized admin receives a
+styled NUI notification in the upper-right corner even if the admin menu itself
+is closed. The alert shows report number, reporter, target when present, and the
+report message. It auto-dismisses after 12 seconds or can be dismissed manually.
+The existing server already broadcasts `fadm:newReport` only to admins, so no
+new permission path is introduced.
