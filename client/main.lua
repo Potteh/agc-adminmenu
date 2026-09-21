@@ -761,3 +761,8 @@ end)
 local fadmAdminLogCb=nil
 RegisterNUICallback('getAdminLogs',function(_,cb) fadmAdminLogCb=cb;TriggerServerEvent('fadm:requestAdminLogs');SetTimeout(3000,function() if fadmAdminLogCb then fadmAdminLogCb({ok=false,logs={}});fadmAdminLogCb=nil end end) end)
 RegisterNetEvent('fadm:adminLogsResponse',function(rows) if fadmAdminLogCb then fadmAdminLogCb({ok=true,logs=rows or {}});fadmAdminLogCb=nil end end)
+
+RegisterNUICallback('auditAction', function(data, cb)
+    TriggerServerEvent('fadm:recordAdminAction', data.target, data.action, data.details)
+    cb({ok=true})
+end)

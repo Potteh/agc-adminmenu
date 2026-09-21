@@ -375,3 +375,46 @@ let adminLogRows=[];
 async function loadAdminLogs(){const list=$('#adminLogList');list.innerHTML='<div class="pi-note">Loading logs...</div>';let d={logs:[]};try{d=await(await post('getAdminLogs')).json()}catch(e){}adminLogRows=d.logs||[];const acts=[...new Set(adminLogRows.map(x=>x.action).filter(Boolean))].sort(),f=$('#adminLogFilter'),cur=f.value;f.innerHTML='<option value="">All Actions</option>'+acts.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');if(acts.includes(cur))f.value=cur;renderAdminLogs()}
 function renderAdminLogs(){const q=($('#adminLogSearch').value||'').toLowerCase(),f=$('#adminLogFilter').value;const rows=adminLogRows.filter(x=>(!f||x.action===f)&&(!q||`${x.adminName} ${x.targetName} ${x.action} ${x.details} ${x.time}`.toLowerCase().includes(q)));$('#adminLogList').innerHTML=rows.length?rows.map(x=>`<div class="admin-log-row"><div><b>${esc(x.action)}</b><span>${esc(x.details||'')}</span></div><div class="admin-log-meta"><span><b>${esc(x.adminName)}</b> → ${esc(x.targetName)}</span><span>${esc(x.time)}</span></div></div>`).join(''):'<div class="pi-note">No matching admin logs.</div>'}
 $('#refreshAdminLogs').onclick=loadAdminLogs;$('#adminLogSearch').addEventListener('input',renderAdminLogs);$('#adminLogFilter').addEventListener('change',renderAdminLogs);document.addEventListener('click',e=>{if(e.target.closest('[data-tab="adminlogs"]'))setTimeout(loadAdminLogs,0)});
+
+// v43 full audit coverage for established admin UI actions.
+// Money, Kick and Move Vehicle remain logged by their authoritative server handlers.
+document.addEventListener('click', e => {
+ const b=e.target.closest('button');
+ if(!b) return;
+ let action=null, details='', target=null;
+ if(b.dataset.act){
+   const map={
+    spectate:'Spectate',freeze:'Freeze',unfreeze:'Unfreeze',revive:'Revive',heal:'Heal',
+    stripclothes:'Remove Clothes',restoreclothes:'Restore Clothes',ragdoll:'Ragdoll',
+    dogs:'Wild Dogs',fire:'Set Fire',explodevehicle:'Explode Vehicle',kill:'Kill',ban:'Ban'
+   };
+   action=map[b.dataset.act]||null; target=b.dataset.id||null;
+ }
+ if(b.dataset.teleport){action=b.dataset.teleport==='goto'?'Go To':'Bring';target=b.dataset.id||null}
+ if(b.hasAttribute('data-waypoint-player')){action='Set Waypoint';target=b.dataset.id||null}
+ if(b.hasAttribute('data-give-item')){action='Open Give Item';target=b.dataset.id||null}
+ if(b.hasAttribute('data-set-job')){action='Open Set Job';target=b.dataset.id||null}
+ if(b.hasAttribute('data-transfer-vehicle')){action='Open Transfer Vehicle';target=b.dataset.id||null}
+ if(action) post('auditAction',{target,action,details}).catch(()=>{});
+});
+
+// Log confirmed modal submissions and global/world/developer actions by stable element IDs/text.
+// This layer is intentionally additive and does not alter the working action handlers.
+document.addEventListener('click', e => {
+ const b=e.target.closest('button'); if(!b) return;
+ const id=b.id||'', txt=(b.textContent||'').trim().toLowerCase();
+ const map={
+  giveItemConfirm:'Give Item',jobConfirm:'Set Job',transferVehicleConfirm:'Transfer Vehicle',
+  dayBtn:'Set Day',nightBtn:'Set Night',earthquakeBtn:'Earthquake',
+  restartBtn:'Restart Sequence',teleportWaypoint:'Teleport to Waypoint',
+  noclipBtn:'Toggle Noclip',invisibleBtn:'Toggle Invisible',
+  godModeBtn:'Toggle God Mode',entityDebuggerBtn:'Toggle Entity Debugger'
+ };
+ let action=map[id];
+ if(!action){
+   if(txt==='day') action='Set Day';
+   else if(txt==='night') action='Set Night';
+   else if(txt.includes('earthquake')) action='Earthquake';
+ }
+ if(action) post('auditAction',{target:null,action,details:''}).catch(()=>{});
+});

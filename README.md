@@ -289,3 +289,9 @@ All database operations are server-side and ACE protected.
 
 ## v42 Admin Logs
 Adds persistent admin_logs.json plus a searchable Admin Logs page. Give/remove money, kicks, and garage moves are recorded server-side. Default retention: 1000 entries.
+
+## v43 Full Audit Logging
+Extends the v42 persistent audit system across player moderation/utility actions
+and developer/world controls. Existing authoritative server logging remains in
+place for money changes, kicks, and owned-vehicle garage moves. Additional UI
+actions are sent through an ACE-protected server audit endpoint.

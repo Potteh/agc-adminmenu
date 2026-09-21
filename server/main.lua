@@ -894,3 +894,9 @@ addAdminLog=function(adminSrc,target,action,details)
  while #adminLogs>(tonumber(Config.MaxAdminLogs) or 1000) do table.remove(adminLogs) end;saveAdminLogs()
 end
 RegisterNetEvent('fadm:requestAdminLogs',function() local src=source;if not isAdmin(src) then return end;TriggerClientEvent('fadm:adminLogsResponse',src,adminLogs) end)
+
+RegisterNetEvent('fadm:recordAdminAction',function(target,action,details)
+ local src=source
+ if not isAdmin(src) then return end
+ addAdminLog(src,target,action,details)
+end)
