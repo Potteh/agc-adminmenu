@@ -367,3 +367,9 @@ The `/admin` command was still checking `isAdmin()`, which now requires active
 duty. That prevented an off-duty admin from opening the menu to go on duty.
 Opening `/admin` now checks ACE permission only (`hasAdminAce`); all actual
 administrative functions continue to require active duty server-side.
+
+## v56 /report UI
+The `/report` command no longer expects command arguments. Running `/report`
+opens the existing New Report NUI directly, with fields for the target Server ID
+and report details. Submission continues through the existing server-side report
+handler, and admins on duty receive the existing styled report notification.

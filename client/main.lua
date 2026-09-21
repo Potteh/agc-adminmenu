@@ -278,15 +278,11 @@ end)
 
 -- Player report command fallback:
 -- /report [player id] [message]
-RegisterCommand('report', function(_, args)
-    local target = tonumber(args[1])
-    table.remove(args, 1)
-    local message = table.concat(args, ' ')
-    if not target or message == '' then
-        TriggerEvent('fadm:notify', 'Usage: /report [player id] [message]')
-        return
-    end
-    TriggerServerEvent('fadm:submitReport', target, message)
+RegisterCommand('report', function()
+    -- Player-facing report UI. This does not request admin data or require admin duty.
+    menuOpen = true
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'openReportForm' })
 end, false)
 
 RegisterNUICallback('submitReport', function(data, cb)
