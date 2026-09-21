@@ -387,3 +387,9 @@ the Dashboard. Every connected player receives a centered CSS announcement even
 when no admin/report UI is open. Messages are limited to 500 characters and are
 recorded in persistent Admin Logs. The Dashboard also includes an On-Duty Staff
 roster with admin names and server IDs, refreshed on duty changes or manually.
+
+## v59 Ban Management + Report Claiming
+Added an on-duty-only Bans page with active-ban search, details, refresh and
+unban. Unbans are recorded in persistent Admin Logs. Reports can now be claimed;
+all on-duty admins receive the updated claim state, and another admin cannot
+take an already claimed report. The claiming admin can unclaim it.

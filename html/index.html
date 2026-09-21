@@ -20,6 +20,7 @@
         <button class="nav active" data-tab="dashboard">⌂ <span>Dashboard</span></button>
         <button class="nav" data-tab="players">♟ <span>Players</span><b id="playerCount">0</b></button>
         <button class="nav" data-tab="reports">⚑ <span>Reports</span><b id="reportCount">0</b></button>
+        <button class="nav" data-tab="bans">⊘ <span>Bans</span></button>
         <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
         <button class="nav" data-tab="adminlogs">☷ <span>Admin Logs</span></button>
         <button class="nav" data-tab="developer">⌘ <span>Developer</span></button>
@@ -80,6 +81,7 @@
         </section>
 
 
+        <section id="bans" class="page"><div class="section-head"><div><h2>Ban Management</h2><p>Search active bans and remove bans.</p></div><button id="refreshBans">Refresh</button></div><input id="banSearch" placeholder="Search player, Ban ID, reason, or admin"><div id="bansList" class="cards"></div></section>
         <section id="world" class="page">
           <div class="section-head"><div><h2>World Controls</h2><p>Synchronize time, weather and global effects for connected players.</p></div></div>
           <div class="world-grid">

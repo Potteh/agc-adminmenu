@@ -1029,3 +1029,51 @@ RegisterNetEvent('fadm:sendAnnouncement',function(kind,message)
  addAdminLog(src,nil,'Server Announcement',('Type: %s | %s'):format(kind,message))
  notify(src,'Announcement sent to all players.')
 end)
+
+
+RegisterNetEvent('fadm:requestBans',function()
+ local src=source;if not isAdmin(src) then return end
+ TriggerClientEvent('fadm:bansData',src,bans)
+end)
+RegisterNetEvent('fadm:unban',function(banId)
+ local src=source;if not isAdmin(src) then return end
+ banId=tostring(banId or '')
+ for i=#bans,1,-1 do
+  if tostring(bans[i].id)==banId then
+   local b=bans[i];table.remove(bans,i);saveBans()
+   addAdminLog(src,nil,'Unban',('%s | %s'):format(b.player or 'Unknown',banId))
+   notify(src,('Unbanned %s (%s).'):format(b.player or 'Unknown',banId))
+   TriggerClientEvent('fadm:bansData',src,bans);return
+  end
+ end
+ notify(src,'Ban not found.')
+end)
+
+local function broadcastReports()
+ for _,id in ipairs(GetPlayers()) do
+  local admin=tonumber(id)
+  if admin and isAdmin(admin) then TriggerClientEvent('fadm:updateData',admin,{players=playerList(),reports=reports,onDuty=true}) end
+ end
+end
+RegisterNetEvent('fadm:claimReport',function(reportId)
+ local src=source;if not isAdmin(src) then return end
+ reportId=tonumber(reportId)
+ for _,r in ipairs(reports) do
+  if r.id==reportId and r.status=='open' then
+   if r.claimedById and tonumber(r.claimedById)~=src then notify(src,('Report #%d is already claimed by %s.'):format(reportId,r.claimedBy or 'another admin'));return end
+   r.claimedById=src;r.claimedBy=GetPlayerName(src) or ('ID '..src);r.claimedAt=os.date('%Y-%m-%d %H:%M:%S')
+   addAdminLog(src,r.reporterId,'Claim Report',('Report #%d'):format(reportId));broadcastReports();return
+  end
+ end
+ notify(src,'Open report not found.')
+end)
+RegisterNetEvent('fadm:unclaimReport',function(reportId)
+ local src=source;if not isAdmin(src) then return end
+ reportId=tonumber(reportId)
+ for _,r in ipairs(reports) do
+  if r.id==reportId and r.status=='open' and tonumber(r.claimedById)==src then
+   r.claimedById=nil;r.claimedBy=nil;r.claimedAt=nil;addAdminLog(src,r.reporterId,'Unclaim Report',('Report #%d'):format(reportId));broadcastReports();return
+  end
+ end
+ notify(src,'You do not own that report claim.')
+end)

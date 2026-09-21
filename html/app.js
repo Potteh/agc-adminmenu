@@ -13,7 +13,7 @@ function showAdminReportAlert(report){
  host.appendChild(el);
  const remove=()=>{if(el.isConnected)el.remove()};el.querySelector('.ara-dismiss').onclick=remove;setTimeout(remove,12000);
 }
-const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],world:['World Controls','Server-wide time, weather and environment effects'],adminlogs:['Admin Logs','Persistent audit trail for administrative actions'],developer:['Developer','Coordinates and development utilities'],reportForm:['Submit Report','Send a report to the administration team']};
+const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],bans:['Bans','Search and manage active bans'],world:['World Controls','Server-wide time, weather and environment effects'],adminlogs:['Admin Logs','Persistent audit trail for administrative actions'],developer:['Developer','Coordinates and development utilities'],reportForm:['Submit Report','Send a report to the administration team']};
 function go(tab){
  const meta=titles[tab]||[String(tab||'Admin').replace(/([A-Z])/g,' $1').trim()||'Admin','Administration controls'];
  $$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
@@ -39,10 +39,10 @@ function renderReports(){
  $('#reportCount').textContent=open;$('#dashReports').textContent=open;
  $('#reportsList').innerHTML=reports.length?reports.map(r=>`<article class="report-card" data-report-id="${r.id}"><div class="report-top"><div><b>Report #${r.id}</b><div class="muted">From ${esc(r.reporter)} (#${r.reporterId}) · Target: ${esc(r.targetName)}${r.target?` (#${r.target})`:''}</div></div><span class="badge ${esc(r.status)}">${esc(r.status)}</span></div><div class="report-msg">${esc(r.message)}</div>
  ${(r.replies||[]).length?`<div class="reply-history">${r.replies.map(x=>`<div class="admin-reply"><b>${esc(x.admin)}</b> ${esc(x.message)}<div class="muted">${esc(x.created||'')}</div></div>`).join('')}</div>`:''}
- ${r.status==='open'?`<div class="actions">${r.target?`<button data-act="spectate" data-id="${r.target}">Spectate target</button><button data-act="freeze" data-id="${r.target}">Freeze</button><button data-act="revive" data-id="${r.target}">Revive</button>`:''}<button class="primary" data-reply="${r.id}">Reply</button><button data-close-report="${r.id}">Close report</button></div>`:''}</article>`).join(''):'<div class="report-card muted">No reports in this view.</div>';
+ ${r.status==='open'?`<div class="report-claim">${r.claimedBy?`<span class="badge open">Claimed by ${esc(r.claimedBy)}</span>`:'<span class="muted">Unclaimed</span>'}</div><div class="actions">${r.claimedBy?`<button data-unclaim-report="${r.id}">Unclaim</button>`:`<button class="primary" data-claim-report="${r.id}">Claim Report</button>`}${r.target?`<button data-act="spectate" data-id="${r.target}">Spectate target</button><button data-act="freeze" data-id="${r.target}">Freeze</button><button data-act="revive" data-id="${r.target}">Revive</button>`:''}<button class="primary" data-reply="${r.id}">Reply</button><button data-close-report="${r.id}">Close report</button></div>`:''}</article>`).join(''):'<div class="report-card muted">No reports in this view.</div>';
 }
 function confirmAction(action,id,name='player'){const dangerous=['ban','kill','fire','dogs','explodevehicle'];if(!dangerous.includes(action)){post('action',{action,target:+id});return}pending={action,id:+id};$('#confirmTitle').textContent=action==='ban'?'Ban player':'Confirm admin action';$('#confirmText').textContent=action==='ban'?`Ban ${name} from the server?`:`Run "${action}" on server ID ${id}?`;$('#reasonWrap').classList.toggle('hidden',action!=='ban');$('#confirmReason').value='';$('#confirm').classList.remove('hidden')}
-document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a)confirmAction(a.dataset.act,a.dataset.id,a.dataset.name);const r=e.target.closest('[data-reply]');if(r)openReply(+r.dataset.reply);const c=e.target.closest('[data-close-report]');if(c)post('closeReport',{id:+c.dataset.closeReport})});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a)confirmAction(a.dataset.act,a.dataset.id,a.dataset.name);const r=e.target.closest('[data-reply]');if(r)openReply(+r.dataset.reply);const c=e.target.closest('[data-close-report]');if(c)post('closeReport',{id:+c.dataset.closeReport});const cr=e.target.closest('[data-claim-report]');if(cr)post('claimReport',{id:+cr.dataset.claimReport});const ur=e.target.closest('[data-unclaim-report]');if(ur)post('unclaimReport',{id:+ur.dataset.unclaimReport})});
 function openReply(id){const card=document.querySelector(`[data-report-id="${id}"]`);if(!card)return toast('Unable to open report reply.');const old=$(`#reply-box-${id}`);if(old){old.remove();return}const box=document.createElement('div');box.id=`reply-box-${id}`;box.className='reply-box';box.innerHTML=`<textarea maxlength="500" placeholder="Write a reply to the reporting player..."></textarea><div class="actions"><button class="primary send">Send Reply</button><button class="cancel">Cancel</button></div>`;card.appendChild(box);const ta=box.querySelector('textarea');ta.focus();box.querySelector('.cancel').onclick=()=>box.remove();box.querySelector('.send').onclick=()=>{const message=ta.value.trim();if(!message)return toast('Enter a reply message.');post('replyReport',{id,message});box.remove();toast('Reply sent to player.')}}
 $('#confirmCancel').onclick=()=>{$('#confirm').classList.add('hidden');pending=null};$('#confirmGo').onclick=()=>{if(!pending)return;
  if(pending.transferVehicle){
@@ -561,3 +561,15 @@ window.addEventListener('message',e=>{
  else if(m.action==='dutyRoster'){dutyRoster=Array.isArray(m.roster)?m.roster:[];renderDutyRoster()}
 });
 setTimeout(()=>post('getDutyRoster',{}).catch(()=>{}),800);
+
+let banRows=[];
+function renderBans(){
+ const box=$('#bansList');if(!box)return;const q=($('#banSearch').value||'').toLowerCase();
+ const rows=banRows.filter(b=>!q||[b.player,b.id,b.reason,b.admin].some(v=>String(v||'').toLowerCase().includes(q)));
+ box.innerHTML=rows.length?rows.map(b=>`<article class="report-card"><div class="report-top"><div><b>${esc(b.player||'Unknown')}</b><div class="muted">${esc(b.id||'No Ban ID')} · ${esc(b.created||'Unknown date')}</div></div><span class="badge open">BANNED</span></div><div class="report-msg">${esc(b.reason||'No reason')}</div><div class="muted">Issued by ${esc(b.admin||'Unknown')}</div><div class="actions"><button class="soft-danger" data-unban-id="${esc(b.id||'')}">Unban</button></div></article>`).join(''):'<div class="report-card muted">No matching active bans.</div>';
+}
+$('#refreshBans').onclick=()=>post('getBans',{});
+$('#banSearch').oninput=renderBans;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-unban-id]');if(b)post('unban',{id:b.dataset.unbanId})});
+document.addEventListener('click',e=>{if(e.target.closest('[data-tab="bans"]'))setTimeout(()=>post('getBans',{}),0)});
+window.addEventListener('message',e=>{if(e.data?.action==='bansData'){banRows=Array.isArray(e.data.bans)?e.data.bans:[];renderBans()}});
