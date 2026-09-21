@@ -373,3 +373,10 @@ The `/report` command no longer expects command arguments. Running `/report`
 opens the existing New Report NUI directly, with fields for the target Server ID
 and report details. Submission continues through the existing server-side report
 handler, and admins on duty receive the existing styled report notification.
+
+## v57 Player Report Duty-Guard Fix
+The off-duty admin click guard was also intercepting the player-facing Submit
+Report button. `/report` now enters an explicit player-report mode. In that mode
+Submit Report and Close are allowed regardless of admin duty/ACE status, while
+all admin controls remain inaccessible. After submission the standalone report
+UI closes automatically.

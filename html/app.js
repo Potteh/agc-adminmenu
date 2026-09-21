@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const app=$('#app'); let state={players:[],reports:[]}; let pending=null;
+const app=$('#app'); let state={players:[],reports:[]}; let pending=null; let playerReportMode=false;
 const resource=()=>GetParentResourceName();
 function post(endpoint,body={}){return fetch(`https://${resource()}/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
@@ -54,7 +54,7 @@ $('#confirmCancel').onclick=()=>{$('#confirm').classList.add('hidden');pending=n
  }if(pending.restartSequence){post('startRestartSequence');toast('Restart warning sequence started.');$('#confirm').classList.add('hidden');pending=null;return}if(pending.worldAction==='earthquake'){post('worldAction',{action:'earthquake'});toast('Earthquake initiated.');$('#confirm').classList.add('hidden');pending=null;return}const reason=$('#confirmReason').value.trim();if(pending.action==='ban'&&!reason)return toast('Enter a ban reason.');post('action',{action:pending.action,target:pending.id,reason});$('#confirm').classList.add('hidden');pending=null};
 $('#playerSearch').oninput=render;$('#reportFilter').onchange=renderReports;$('#refresh').onclick=()=>post('refresh');$('#close').onclick=()=>post('close');
 $('#quickVehicle').onclick=()=>$('#vehiclePanel').classList.toggle('hidden');$('#spawnVehicle').onclick=()=>{const model=$('#vehicleModel').value.trim();if(!model)return toast('Enter a vehicle model.');post('spawnVehicle',{model});$('#vehicleModel').value='';toast(`Spawning ${model}...`)};
-$('#reportMessage').oninput=e=>$('#charCount').textContent=`${e.target.value.length} / 500`;$('#submitReport').onclick=()=>{const message=$('#reportMessage').value.trim(),target=$('#reportTarget').value;if(!message)return toast('Enter report details.');post('submitReport',{target:target||null,message});$('#reportMessage').value='';$('#charCount').textContent='0 / 500';toast('Report submitted.')};
+$('#reportMessage').oninput=e=>$('#charCount').textContent=`${e.target.value.length} / 500`;$('#submitReport').onclick=()=>{const message=$('#reportMessage').value.trim(),target=$('#reportTarget').value;if(!message)return toast('Enter report details.');post('submitReport',{target:target||null,message});$('#reportMessage').value='';$('#charCount').textContent='0 / 500';toast('Report submitted.');if(playerReportMode){setTimeout(()=>{playerReportMode=false;post('close')},450)}};
 
 $$('[data-world]').forEach(b=>b.onclick=()=>{
   post('worldAction',{action:b.dataset.world,value:b.dataset.value});
@@ -81,8 +81,8 @@ $('#restartSequenceBtn').onclick=()=>{
 };
 function formatRestartTime(seconds){seconds=Math.max(0,Number(seconds)||0);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`}
 
-window.addEventListener('message',e=>{const m=e.data;if(m.action==='openReportForm'){app.classList.remove('hidden');go('reportForm');$('#reportTarget').value='';$('#reportMessage').value='';$('#charCount').textContent='0 / 500';setTimeout(()=>$('#reportTarget').focus(),0)}
- else if(m.action==='show'){app.classList.remove('hidden');if(m.data){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}}else if(m.action==='hide')app.classList.add('hidden');else if(m.action==='data'){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();showAdminReportAlert(m.report)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
+window.addEventListener('message',e=>{const m=e.data;if(m.action==='openReportForm'){playerReportMode=true;app.classList.remove('hidden');go('reportForm');$('#reportTarget').value='';$('#reportMessage').value='';$('#charCount').textContent='0 / 500';setTimeout(()=>$('#reportTarget').focus(),0)}
+ else if(m.action==='show'){playerReportMode=false;app.classList.remove('hidden');if(m.data){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}}else if(m.action==='hide'){playerReportMode=false;app.classList.add('hidden')}else if(m.action==='data'){state=m.data;if(typeof m.data.onDuty==='boolean'){dutyOn=m.data.onDuty;renderDuty()}render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();showAdminReportAlert(m.report)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#confirm').classList.contains('hidden')){$('#confirm').classList.add('hidden');pending=null}else if(e.key==='Escape')post('close')});
 
 document.addEventListener('click', async (e) => {
@@ -523,8 +523,13 @@ $('#warningRefresh').onclick=loadWarnings;$('#warningClose').onclick=()=>$('#war
 window.addEventListener('message',e=>{if(e.data&&e.data.action==='dutyState'){dutyOn=!!e.data.onDuty;renderDuty();}});
 
 document.addEventListener('click',e=>{
- if(dutyOn)return;
  const b=e.target.closest('button');if(!b)return;
+ // /report is a player-facing workflow, not an admin function.
+ if(playerReportMode){
+   if(b.id==='submitReport'||b.id==='close')return;
+   e.preventDefault();e.stopImmediatePropagation();return;
+ }
+ if(dutyOn)return;
  if(b.id==='adminDutyBtn'||b.id==='close'||b.dataset.tab==='dashboard')return;
  e.preventDefault();e.stopImmediatePropagation();toast('Go on admin duty to use administrative functions.');
 },true);
