@@ -268,3 +268,9 @@ normalizes the existing UI player-state shape before using Array.find().
 Manage Player now includes Set Waypoint, Give Item, Set Job, Transfer Vehicle,
 Manage Money, and Kick. Money changes and kicks are server-side ACE validated.
 Existing item/job/vehicle-transfer interfaces are reused.
+
+## v39 Player Management modal fix
+Fixed Give Item / Set Job / Transfer Vehicle using guessed modal field IDs. These
+buttons now invoke the already-tested player-card actions. Manage Money and Kick
+now close the Player Management overlay before opening their own modal, preventing
+hidden modal stacking.

@@ -288,28 +288,30 @@ document.addEventListener('click',e=>{
  if(a==='waypoint'){post('waypointPlayer',{target:p.id});toast('Waypoint request sent.');return}
  if(a==='giveitem'){
    closePlayerInfo();
-   document.querySelector('#giveItemPlayer').textContent=`${p.characterName||p.name} (#${p.id})`;
-   document.querySelector('#giveItemTarget').value=p.id;
-   document.querySelector('#giveItemModal').classList.remove('hidden');return
+   const existing=document.querySelector(`[data-give-item][data-id="${p.id}"]`);
+   if(existing) existing.click(); else toast('Give Item action is unavailable.');
+   return
  }
  if(a==='setjob'){
    closePlayerInfo();
-   document.querySelector('#jobPlayer').textContent=`${p.characterName||p.name} (#${p.id})`;
-   document.querySelector('#jobTarget').value=p.id;
-   document.querySelector('#jobModal').classList.remove('hidden');return
+   const existing=document.querySelector(`[data-set-job][data-id="${p.id}"]`);
+   if(existing) existing.click(); else toast('Set Job action is unavailable.');
+   return
  }
  if(a==='transfer'){
    closePlayerInfo();
-   document.querySelector('#transferVehicleTarget').value=p.id;
-   document.querySelector('#transferVehicleName').textContent=p.characterName||p.name;
-   document.querySelector('#transferVehicleModal').classList.remove('hidden');return
+   const existing=document.querySelector(`[data-transfer-vehicle][data-id="${p.id}"]`);
+   if(existing) existing.click(); else toast('Transfer Vehicle action is unavailable.');
+   return
  }
  if(a==='money'){
-   managementTarget=p;document.querySelector('#moneyAmount').value='';
+   managementTarget=p;closePlayerInfo();
+   document.querySelector('#moneyAmount').value='';
    document.querySelector('#moneyModal').classList.remove('hidden');return
  }
  if(a==='kick'){
-   managementTarget=p;document.querySelector('#kickReason').value='';
+   managementTarget=p;closePlayerInfo();
+   document.querySelector('#kickReason').value='';
    document.querySelector('#kickModal').classList.remove('hidden');return
  }
 });
