@@ -295,3 +295,8 @@ Extends the v42 persistent audit system across player moderation/utility actions
 and developer/world controls. Existing authoritative server logging remains in
 place for money changes, kicks, and owned-vehicle garage moves. Additional UI
 actions are sent through an ACE-protected server audit endpoint.
+
+## v44 Navigation Safety Fix
+Adds Admin Logs to the page-title metadata and makes go(tab) defensive. Unknown
+or future tabs now receive a safe fallback title instead of throwing
+"Cannot read properties of undefined (reading '0')".
