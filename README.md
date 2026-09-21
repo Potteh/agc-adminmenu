@@ -476,3 +476,13 @@ name/server-ID search toolbar remains fixed at the top instead of scrolling with
 the player management results.
 
 The working v67 Entity Debugger raycast and server-side behavior remain unchanged.
+
+## v70 UI fixes
+- Fixed Remove Clothes in Manage Player. The UI was sending `strip`, while the
+  existing server action is `stripclothes`, causing "strip sent" followed by
+  "Unknown action".
+- Fixed the Players search position. Page navigation now resets the shared main
+  scroll position, and the Players page uses its own results scroller so the
+  search bar stays at the top.
+- Mouse-wheel scrolling on Players now scrolls the player results instead of
+  moving the whole admin workspace.
