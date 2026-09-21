@@ -393,3 +393,10 @@ Added an on-duty-only Bans page with active-ban search, details, refresh and
 unban. Unbans are recorded in persistent Admin Logs. Reports can now be claimed;
 all on-duty admins receive the updated claim state, and another admin cannot
 take an already claimed report. The claiming admin can unclaim it.
+
+## v60 Vehicle + Job Browsers
+Vehicle spawning now uses a searchable browser populated directly from
+QBCore.Shared.Vehicles. Search by model, display name, brand, or category and
+spawn with one click. Set Job now loads QBCore.Shared.Jobs into a searchable
+selector and dynamically shows only valid grades for the selected job. The
+existing server-side job and vehicle validation remains authoritative.

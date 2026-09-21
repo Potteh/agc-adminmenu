@@ -62,8 +62,9 @@
           </div>
           <div class="drawer" id="dutyRosterPanel"><div class="section-head"><div><h3>On-Duty Staff</h3><p>Administrators currently available.</p></div><button id="refreshDutyRoster">Refresh</button></div><div id="dutyRosterList" class="duty-roster-list"><div class="muted">No admins on duty.</div></div></div>
           <div id="vehiclePanel" class="drawer hidden">
-            <div><h3>Spawn Vehicle</h3><p>Enter a GTA vehicle model name.</p></div>
-            <div class="inline"><input id="vehicleModel" placeholder="e.g. sultan, adder, police"><button id="spawnVehicle" class="primary">Spawn</button></div>
+            <div><h3>Vehicle Browser</h3><p>Search vehicles registered in QBCore.Shared.Vehicles.</p></div>
+            <div class="inline"><input id="vehicleSearch" placeholder="Search model, name, brand, or category"><button id="refreshVehicleBrowser">Refresh</button></div>
+            <div id="vehicleBrowserList" class="browser-list"><div class="muted">Open the browser to load vehicles.</div></div>
           </div>
         </section>
 
@@ -142,8 +143,10 @@
 
   <div id="jobModal" class="modal hidden"><div class="modal-card">
     <h2>Set Player Job</h2><p id="jobPlayer" class="muted"></p>
-    <label>QBCore Job Name</label><input id="jobName" type="text" placeholder="police, ambulance, mechanic" autocomplete="off">
-    <label>Job Grade</label><input id="jobGrade" type="number" min="0" value="0">
+    <label>Search Jobs</label><input id="jobSearch" type="text" placeholder="Search job name or label" autocomplete="off">
+    <label>Job</label><select id="jobName"></select>
+    <label>Grade</label><select id="jobGrade"></select>
+    <div id="jobBrowserHint" class="muted">Jobs and valid grades are loaded from QBCore.</div>
     <div class="modal-actions"><button type="button" id="jobCancel">Cancel</button><button type="button" id="jobSubmit" class="primary">Set Job</button></div>
   </div></div>
   <div id="moneyModal" class="modal hidden"><div class="modal-card"><div class="modal-head"><div><div class="eyebrow">PLAYER MANAGEMENT</div><h2>Manage Money</h2></div><button type="button" id="moneyClose" class="icon-btn">×</button></div><label>Account<select id="moneyAccount"><option value="cash">Cash</option><option value="bank">Bank</option></select></label><label>Operation<select id="moneyOperation"><option value="add">Give Money</option><option value="remove">Remove Money</option></select></label><label>Amount<input id="moneyAmount" type="number" min="1" max="10000000" placeholder="1000"></label><div class="modal-actions"><button type="button" id="moneyCancel">Cancel</button><button type="button" id="moneySubmit" class="primary">Apply</button></div></div></div>

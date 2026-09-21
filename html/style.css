@@ -74,3 +74,5 @@ body.admin-off-duty #dashboard .stat,body.admin-off-duty #dashboard .quick-grid 
 .duty-roster-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.duty-roster-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;padding:9px 11px;border:1px solid rgba(255,255,255,.08);border-radius:8px}.duty-roster-row small{opacity:.6}.duty-dot{width:8px;height:8px;border-radius:50%;background:#6bd38b;box-shadow:0 0 9px rgba(107,211,139,.55)}
 
 .report-claim{display:flex;align-items:center;margin:10px 0 2px}.report-claim .badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.browser-list{margin-top:12px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}.browser-row{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.035)}.browser-row span{display:flex;flex-direction:column;gap:3px}.browser-row small{opacity:.6}.browser-row strong{font-size:12px;opacity:.8}

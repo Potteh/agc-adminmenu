@@ -839,3 +839,8 @@ RegisterNUICallback('unban',function(data,cb) TriggerServerEvent('fadm:unban',da
 RegisterNetEvent('fadm:bansData',function(rows) SendNUIMessage({action='bansData',bans=rows}) end)
 RegisterNUICallback('claimReport',function(data,cb) TriggerServerEvent('fadm:claimReport',tonumber(data.id));cb({ok=true}) end)
 RegisterNUICallback('unclaimReport',function(data,cb) TriggerServerEvent('fadm:unclaimReport',tonumber(data.id));cb({ok=true}) end)
+
+RegisterNUICallback('getVehicleCatalog',function(_,cb) TriggerServerEvent('fadm:requestVehicleCatalog');cb({ok=true}) end)
+RegisterNUICallback('getJobCatalog',function(_,cb) TriggerServerEvent('fadm:requestJobCatalog');cb({ok=true}) end)
+RegisterNetEvent('fadm:vehicleCatalog',function(rows) SendNUIMessage({action='vehicleCatalog',vehicles=rows}) end)
+RegisterNetEvent('fadm:jobCatalog',function(rows) SendNUIMessage({action='jobCatalog',jobs=rows}) end)

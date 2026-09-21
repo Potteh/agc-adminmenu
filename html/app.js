@@ -53,7 +53,12 @@ $('#confirmCancel').onclick=()=>{$('#confirm').classList.add('hidden');pending=n
    return;
  }if(pending.restartSequence){post('startRestartSequence');toast('Restart warning sequence started.');$('#confirm').classList.add('hidden');pending=null;return}if(pending.worldAction==='earthquake'){post('worldAction',{action:'earthquake'});toast('Earthquake initiated.');$('#confirm').classList.add('hidden');pending=null;return}const reason=$('#confirmReason').value.trim();if(pending.action==='ban'&&!reason)return toast('Enter a ban reason.');post('action',{action:pending.action,target:pending.id,reason});$('#confirm').classList.add('hidden');pending=null};
 $('#playerSearch').oninput=render;$('#reportFilter').onchange=renderReports;$('#refresh').onclick=()=>post('refresh');$('#close').onclick=()=>post('close');
-$('#quickVehicle').onclick=()=>$('#vehiclePanel').classList.toggle('hidden');$('#spawnVehicle').onclick=()=>{const model=$('#vehicleModel').value.trim();if(!model)return toast('Enter a vehicle model.');post('spawnVehicle',{model});$('#vehicleModel').value='';toast(`Spawning ${model}...`)};
+let vehicleCatalog=[];
+function renderVehicleBrowser(){const box=$('#vehicleBrowserList');if(!box)return;const q=($('#vehicleSearch').value||'').toLowerCase();const rows=vehicleCatalog.filter(v=>!q||[v.model,v.name,v.brand,v.category].some(x=>String(x||'').toLowerCase().includes(q))).slice(0,150);box.innerHTML=rows.length?rows.map(v=>`<button class="browser-row" data-spawn-browser="${esc(v.model)}"><span><b>${esc(v.brand?`${v.brand} ${v.name}`:v.name)}</b><small>${esc(v.model)}${v.category?` · ${esc(v.category)}`:''}</small></span><strong>Spawn</strong></button>`).join(''):'<div class="muted">No matching vehicles.</div>'}
+$('#quickVehicle').onclick=()=>{const p=$('#vehiclePanel');p.classList.toggle('hidden');if(!p.classList.contains('hidden'))post('getVehicleCatalog',{})};
+$('#refreshVehicleBrowser').onclick=()=>post('getVehicleCatalog',{});
+$('#vehicleSearch').oninput=renderVehicleBrowser;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-spawn-browser]');if(b){post('spawnVehicle',{model:b.dataset.spawnBrowser});toast(`Spawning ${b.dataset.spawnBrowser}...`)}});
 $('#reportMessage').oninput=e=>$('#charCount').textContent=`${e.target.value.length} / 500`;$('#submitReport').onclick=()=>{const message=$('#reportMessage').value.trim(),target=$('#reportTarget').value;if(!message)return toast('Enter report details.');post('submitReport',{target:target||null,message});$('#reportMessage').value='';$('#charCount').textContent='0 / 500';toast('Report submitted.');if(playerReportMode){setTimeout(()=>{playerReportMode=false;post('close')},450)}};
 
 $$('[data-world]').forEach(b=>b.onclick=()=>{
@@ -188,18 +193,28 @@ document.addEventListener('click', (e) => {
   document.querySelector('#confirm').classList.remove('hidden');
 });
 
-let jobTarget=null;
+let jobTarget=null,jobCatalog=[];
+function filteredJobs(){const q=($('#jobSearch')?.value||'').toLowerCase();return jobCatalog.filter(x=>!q||x.name.toLowerCase().includes(q)||x.label.toLowerCase().includes(q))}
+function renderJobOptions(){
+ const sel=$('#jobName');if(!sel)return;const rows=filteredJobs();const keep=sel.value;
+ sel.innerHTML=rows.map(x=>`<option value="${esc(x.name)}">${esc(x.label)} (${esc(x.name)})</option>`).join('');
+ if(rows.some(x=>x.name===keep))sel.value=keep;renderJobGrades();
+}
+function renderJobGrades(){
+ const sel=$('#jobGrade'),job=jobCatalog.find(x=>x.name===$('#jobName').value);if(!sel)return;
+ sel.innerHTML=job?(job.grades||[]).map(g=>`<option value="${g.grade}">${g.grade} — ${esc(g.name)}</option>`).join(''):'';
+}
 document.addEventListener('click',async e=>{
  const b=e.target.closest('button[data-set-job]');
- if(b){e.preventDefault();jobTarget=Number(b.dataset.id);$('#jobPlayer').textContent=`${b.dataset.name||'Player'} (#${jobTarget})`;$('#jobName').value='';$('#jobGrade').value='0';$('#jobModal').classList.remove('hidden');return}
+ if(b){e.preventDefault();jobTarget=Number(b.dataset.id);$('#jobPlayer').textContent=`${b.dataset.name||'Player'} (#${jobTarget})`;$('#jobSearch').value='';$('#jobModal').classList.remove('hidden');await post('getJobCatalog',{});return}
  if(e.target.closest('#jobCancel')){$('#jobModal').classList.add('hidden');jobTarget=null;return}
  if(e.target.closest('#jobSubmit')){
-   const job=$('#jobName').value.trim().toLowerCase(),grade=Math.max(0,Math.floor(Number($('#jobGrade').value)||0));
-   if(!jobTarget||!job){toast('Enter a valid QBCore job name.');return}
-   await post('setPlayerJob',{target:jobTarget,job,grade});
-   $('#jobModal').classList.add('hidden');toast(`Job request sent: ${job} grade ${grade}`);jobTarget=null;
+   const job=$('#jobName').value,grade=Number($('#jobGrade').value);
+   if(!jobTarget||!job||!Number.isFinite(grade)){toast('Select a valid job and grade.');return}
+   await post('setPlayerJob',{target:jobTarget,job,grade});$('#jobModal').classList.add('hidden');toast(`Job request sent: ${job} grade ${grade}`);jobTarget=null;
  }
 });
+$('#jobSearch').oninput=renderJobOptions;$('#jobName').onchange=renderJobGrades;
 
 function coordNum(v){ return Number(v||0).toFixed(4); }
 async function refreshDeveloperCoords(){
@@ -573,3 +588,9 @@ $('#banSearch').oninput=renderBans;
 document.addEventListener('click',e=>{const b=e.target.closest('[data-unban-id]');if(b)post('unban',{id:b.dataset.unbanId})});
 document.addEventListener('click',e=>{if(e.target.closest('[data-tab="bans"]'))setTimeout(()=>post('getBans',{}),0)});
 window.addEventListener('message',e=>{if(e.data?.action==='bansData'){banRows=Array.isArray(e.data.bans)?e.data.bans:[];renderBans()}});
+
+window.addEventListener('message',e=>{
+ const m=e.data||{};
+ if(m.action==='vehicleCatalog'){vehicleCatalog=Array.isArray(m.vehicles)?m.vehicles:[];renderVehicleBrowser()}
+ else if(m.action==='jobCatalog'){jobCatalog=Array.isArray(m.jobs)?m.jobs:[];renderJobOptions()}
+});

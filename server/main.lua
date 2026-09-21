@@ -1077,3 +1077,25 @@ RegisterNetEvent('fadm:unclaimReport',function(reportId)
  end
  notify(src,'You do not own that report claim.')
 end)
+
+RegisterNetEvent('fadm:requestVehicleCatalog',function()
+ local src=source;if not isAdmin(src) then return end
+ local QBCore=exports['qb-core']:GetCoreObject();local rows={}
+ for model,v in pairs(QBCore.Shared.Vehicles or {}) do
+  rows[#rows+1]={model=model,name=v.name or model,brand=v.brand or '',category=v.category or v.type or ''}
+ end
+ table.sort(rows,function(a,b)return (a.brand..a.name):lower()<(b.brand..b.name):lower() end)
+ TriggerClientEvent('fadm:vehicleCatalog',src,rows)
+end)
+RegisterNetEvent('fadm:requestJobCatalog',function()
+ local src=source;if not isAdmin(src) then return end
+ local QBCore=exports['qb-core']:GetCoreObject();local rows={}
+ for name,j in pairs(QBCore.Shared.Jobs or {}) do
+  local grades={}
+  for k,g in pairs(j.grades or {}) do grades[#grades+1]={grade=tonumber(k) or tonumber(g.level) or 0,name=g.name or tostring(k)} end
+  table.sort(grades,function(a,b)return a.grade<b.grade end)
+  rows[#rows+1]={name=name,label=j.label or name,grades=grades}
+ end
+ table.sort(rows,function(a,b)return a.label:lower()<b.label:lower() end)
+ TriggerClientEvent('fadm:jobCatalog',src,rows)
+end)
