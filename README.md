@@ -336,3 +336,9 @@ deployment updates overwriting the JSON audit file.
 - Warned players receive an immediate notification.
 - Dashboard Admin Duty toggle with ON/OFF status.
 - Duty changes and warnings are written to persistent Admin Logs.
+
+## v51 Warnings Button Fix
+The warnings modal and backend were present in v50, but the Warnings button was
+not inserted into the actual Manage Player Quick Actions markup. v51 adds the
+missing `data-pi-extra="warnings"` button beside Vehicle Management and Manage
+Money so the existing warnings handler is reachable.
