@@ -342,3 +342,8 @@ The warnings modal and backend were present in v50, but the Warnings button was
 not inserted into the actual Manage Player Quick Actions markup. v51 adds the
 missing `data-pi-extra="warnings"` button beside Vehicle Management and Manage
 Money so the existing warnings handler is reachable.
+
+## v52 Warnings Click Fix
+Fixed a data-action mismatch: the Manage Player button sends `warnings`, while
+the click handler in v50/v51 was checking for `warn`. The handler now matches
+`warnings`, so clicking the button opens the existing warnings modal.

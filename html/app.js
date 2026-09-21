@@ -324,7 +324,7 @@ document.addEventListener('click',e=>{
  if(a==='vehiclemanage'){
    managementTarget=p;closePlayerInfo();openVehicleManagement(p);return
  }
- if(a==='warn'){
+ if(a==='warnings'){
    managementTarget=p;closePlayerInfo();openWarnings(p);return
  }
  if(a==='money'){
