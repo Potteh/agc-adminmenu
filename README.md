@@ -248,3 +248,6 @@ admin. The admin client then uses `SetNewWaypoint(x, y)` to place the GPS waypoi
 Fixed the player-card renderer so the Ragdoll button is actually inserted before
 Wild Dogs. The v30 backend/client ragdoll handlers were present, but the UI button
 insertion did not survive the generated player-card markup.
+
+## v32 Developer expansion
+Added Noclip, Invisible Mode, Teleport to Waypoint, and Entity Debugger to Developer Tools.

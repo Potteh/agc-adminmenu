@@ -638,36 +638,58 @@ CreateThread(function()
     end
 end)
 
-
--- Optional acg_radio admin integration
-RegisterNetEvent('fadm:radioData', function(data)
-    SendNUIMessage({ action = 'radioData', data = data or { available = false, radios = {} } })
+local fadmNoclip=false
+local fadmInvisible=false
+RegisterNUICallback('toggleNoclip',function(_,cb)
+ fadmNoclip=not fadmNoclip local ped=PlayerPedId()
+ FreezeEntityPosition(ped,fadmNoclip) SetEntityCollision(ped,not fadmNoclip,not fadmNoclip)
+ cb({ok=true,enabled=fadmNoclip})
 end)
-
-RegisterNUICallback('radioRefresh', function(_, cb)
-    TriggerServerEvent('fadm:radioRefresh')
-    cb({ok=true})
+CreateThread(function()
+ while true do
+  if not fadmNoclip then Wait(400) else
+   Wait(0) local ped=PlayerPedId() local pos=GetEntityCoords(ped) local rot=GetGameplayCamRot(2)
+   local rz=math.rad(rot.z) local rx=math.rad(rot.x)
+   local dir=vector3(-math.sin(rz)*math.abs(math.cos(rx)),math.cos(rz)*math.abs(math.cos(rx)),math.sin(rx))
+   local right=vector3(math.cos(rz),math.sin(rz),0.0) local speed=IsControlPressed(0,21) and 2.5 or 0.7
+   if IsControlPressed(0,32) then pos=pos+dir*speed end
+   if IsControlPressed(0,33) then pos=pos-dir*speed end
+   if IsControlPressed(0,34) then pos=pos-right*speed end
+   if IsControlPressed(0,35) then pos=pos+right*speed end
+   if IsControlPressed(0,22) then pos=pos+vector3(0,0,speed) end
+   if IsControlPressed(0,36) then pos=pos-vector3(0,0,speed) end
+   SetEntityCoordsNoOffset(ped,pos.x,pos.y,pos.z,true,true,true) SetEntityHeading(ped,rot.z)
+  end
+ end
 end)
-
-RegisterNUICallback('radioStop', function(data, cb)
-    TriggerServerEvent('fadm:radioStop', tonumber(data.netId))
-    cb({ok=true})
+RegisterNUICallback('toggleInvisible',function(_,cb)
+ fadmInvisible=not fadmInvisible local ped=PlayerPedId()
+ SetEntityVisible(ped,not fadmInvisible,false) SetEntityAlpha(ped,fadmInvisible and 0 or 255,false)
+ cb({ok=true,enabled=fadmInvisible})
 end)
-
-RegisterNUICallback('radioStopAll', function(_, cb)
-    TriggerServerEvent('fadm:radioStopAll')
-    cb({ok=true})
+RegisterNUICallback('teleportWaypoint',function(_,cb)
+ local blip=GetFirstBlipInfoId(8)
+ if not DoesBlipExist(blip) then cb({ok=false,message='Place a waypoint on the map first.'}) return end
+ local c=GetBlipInfoIdCoord(blip) local ped=PlayerPedId() local found=false
+ for height=1000,0,-25 do
+  SetEntityCoordsNoOffset(ped,c.x,c.y,height+0.0,false,false,false) Wait(10)
+  local ok,z=GetGroundZFor_3dCoord(c.x,c.y,height+0.0,false)
+  if ok then SetEntityCoordsNoOffset(ped,c.x,c.y,z+1.0,false,false,false) found=true break end
+ end
+ if not found then SetEntityCoordsNoOffset(ped,c.x,c.y,100.0,false,false,false) end
+ cb({ok=true})
 end)
-
-RegisterNUICallback('radioTeleport', function(data, cb)
-    TriggerServerEvent('fadm:radioTeleport', tonumber(data.netId))
-    cb({ok=true})
-end)
-
-RegisterNetEvent('fadm:teleportToRadioCoords', function(x, y, z, netId)
-    x, y, z = tonumber(x), tonumber(y), tonumber(z)
-    if not x or not y or not z then return end
-    local ped = PlayerPedId()
-    SetEntityCoords(ped, x + 2.0, y + 2.0, z + 1.0, false, false, false, false)
-    TriggerEvent('fadm:notify', ('Teleported to radio vehicle #%s.'):format(tostring(netId or '?')))
+local function fadmRotDir(r)
+ local rz=math.rad(r.z) local rx=math.rad(r.x) local cx=math.abs(math.cos(rx))
+ return vector3(-math.sin(rz)*cx,math.cos(rz)*cx,math.sin(rx))
+end
+RegisterNUICallback('inspectEntity',function(_,cb)
+ local cam=GetGameplayCamCoord() local dest=cam+fadmRotDir(GetGameplayCamRot(2))*25.0
+ local ray=StartShapeTestRay(cam.x,cam.y,cam.z,dest.x,dest.y,dest.z,-1,PlayerPedId(),7)
+ local _,hit,_,_,entity=GetShapeTestResult(ray)
+ if hit~=1 or entity==0 then cb({ok=false,message='No entity found in front of you.'}) return end
+ local c=GetEntityCoords(entity) local t=GetEntityType(entity)
+ cb({ok=true,type=t==1 and 'Ped' or t==2 and 'Vehicle' or t==3 and 'Object' or 'Unknown',entity=entity,
+ networkId=NetworkGetNetworkIdFromEntity(entity),model=GetEntityModel(entity),x=c.x,y=c.y,z=c.z,
+ heading=GetEntityHeading(entity),health=GetEntityHealth(entity)})
 end)

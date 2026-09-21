@@ -1,10 +1,10 @@
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const app=$('#app'); let state={players:[],reports:[],radio:{available:false,radios:[]}}; let pending=null;
+const app=$('#app'); let state={players:[],reports:[]}; let pending=null;
 const resource=()=>GetParentResourceName();
 function post(endpoint,body={}){return fetch(`https://${resource()}/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;$('#toastStack').appendChild(el);setTimeout(()=>el.remove(),3200)}
-const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],world:['World Controls','Server-wide time, weather and environment effects'],developer:['Developer','Coordinates and development utilities'],radio:['ACG Radio','Monitor and manage active vehicle radios'],reportForm:['Submit Report','Send a report to the administration team']};
+const titles={dashboard:['Dashboard','Server administration overview'],players:['Players','Manage connected players and moderation actions'],reports:['Reports','Review, reply to, and resolve player reports'],world:['World Controls','Server-wide time, weather and environment effects'],developer:['Developer','Coordinates and development utilities'],reportForm:['Submit Report','Send a report to the administration team']};
 function go(tab){$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));$$('.page').forEach(x=>x.classList.toggle('active',x.id===tab));$('#pageTitle').textContent=titles[tab][0];$('#pageSub').textContent=titles[tab][1]}
 $$('.nav').forEach(b=>b.onclick=()=>go(b.dataset.tab)); $$('[data-jump]').forEach(b=>b.onclick=()=>go(b.dataset.jump));
 function initials(n){return String(n||'?').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
@@ -17,29 +17,6 @@ function render(){
  <button data-act="stripclothes" data-id="${p.id}">Remove Clothes</button><button data-act="restoreclothes" data-id="${p.id}">Restore Clothes</button> <button data-act="ragdoll" data-id="${p.id}">Ragdoll</button><button data-act="dogs" data-id="${p.id}">Wild Dogs</button><button class="soft-danger" data-act="fire" data-id="${p.id}">Set Fire</button><button class="soft-danger" data-act="explodevehicle" data-id="${p.id}">Explode Vehicle</button><button class="soft-danger" data-act="kill" data-id="${p.id}">Kill</button><button class="soft-danger" data-act="ban" data-id="${p.id}" data-name="${esc(p.name)}">Ban</button>
  </div></article>`).join(''):'<div class="player-card muted">No players match your search.</div>';
  renderReports();
- renderRadios();
-}
-function fmtRadioTime(seconds){seconds=Math.max(0,Math.floor(Number(seconds)||0));return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`}
-function renderRadios(){
- const integration=state.radio||{available:false,radios:[]};
- const radios=Array.isArray(integration.radios)?integration.radios:[];
- const count=$('#radioCount'); if(count) count.textContent=radios.length;
- const status=$('#radioAvailability');
- if(status){status.textContent=integration.available?'CONNECTED':'OFFLINE';status.classList.toggle('open',integration.available)}
- const summary=$('#radioSummary');
- if(summary) summary.innerHTML=`<div class="radio-stat"><span>ACTIVE RADIOS</span><strong>${radios.length}</strong></div><div class="radio-stat"><span>INTEGRATION</span><strong class="${integration.available?'good':''}">${integration.available?'CONNECTED':'STANDALONE / OFFLINE'}</strong></div>`;
- const list=$('#radioList'); if(!list)return;
- if(!integration.available){list.innerHTML='<div class="radio-card muted">agc-carradio is not running or the optional integration is disabled. The admin menu continues to work normally.</div>';return}
- if(!radios.length){list.innerHTML='<div class="radio-card muted">No vehicle radios are currently active.</div>';return}
- list.innerHTML=radios.map(r=>{
-   const net=Number(r.netId)||0, source=String(r.source||'unknown');
-   const name=source==='stream'?(r.stationName||r.name||'Live Stream'):(r.title||r.videoId||'YouTube');
-   const detail=source==='stream'?(r.genre||'Live radio'):(r.author||r.videoId||'YouTube');
-   const live=source==='stream'?'<span class="radio-live">● LIVE</span>':`<span class="badge">${esc(fmtRadioTime(r.position))}</span>`;
-   const occupants=Array.isArray(r.occupants)?r.occupants:[];
-   const occupantMeta=occupants.length?occupants.map(o=>`<span>${esc(o.role||'Occupant')} Character <b>${esc(o.characterName||'Character not loaded')}</b></span><span>${esc(o.role||'Occupant')} FiveM/Rockstar <b>${esc(o.rockstarName||'Unknown')}</b></span>`).join(''):'<span>Occupants <b>None detected</b></span>';
-   return `<article class="radio-card"><div class="radio-card-top"><div><div class="radio-source">${esc(source.toUpperCase())} ${live}</div><h3>${esc(name)}</h3><p>${esc(detail)}</p></div><div class="radio-volume"><span>VOLUME</span><strong>${Math.max(0,Math.min(100,Number(r.volume)||0))}%</strong></div></div><div class="radio-meta"><span>Network ID <b>#${net}</b></span>${r.plate?`<span>Plate <b>${esc(r.plate)}</b></span>`:''}${occupantMeta}<span>Status <b>${r.playing===false?'PAUSED':'PLAYING'}</b></span>${r.queueLength!=null?`<span>Queue <b>${Number(r.queueLength)||0}</b></span>`:''}</div><div class="actions"><button class="primary" data-radio-teleport="${net}">Teleport To Vehicle</button><button class="soft-danger" data-radio-stop="${net}">Stop Radio</button></div></article>`
- }).join('');
 }
 function renderReports(){
  const f=$('#reportFilter').value; const reports=[...state.reports].reverse().filter(r=>f==='all'||r.status===f); const open=state.reports.filter(r=>r.status==='open').length;
@@ -52,8 +29,6 @@ function confirmAction(action,id,name='player'){const dangerous=['ban','kill','f
 document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a)confirmAction(a.dataset.act,a.dataset.id,a.dataset.name);const r=e.target.closest('[data-reply]');if(r)openReply(+r.dataset.reply);const c=e.target.closest('[data-close-report]');if(c)post('closeReport',{id:+c.dataset.closeReport})});
 function openReply(id){const card=document.querySelector(`[data-report-id="${id}"]`);if(!card)return toast('Unable to open report reply.');const old=$(`#reply-box-${id}`);if(old){old.remove();return}const box=document.createElement('div');box.id=`reply-box-${id}`;box.className='reply-box';box.innerHTML=`<textarea maxlength="500" placeholder="Write a reply to the reporting player..."></textarea><div class="actions"><button class="primary send">Send Reply</button><button class="cancel">Cancel</button></div>`;card.appendChild(box);const ta=box.querySelector('textarea');ta.focus();box.querySelector('.cancel').onclick=()=>box.remove();box.querySelector('.send').onclick=()=>{const message=ta.value.trim();if(!message)return toast('Enter a reply message.');post('replyReport',{id,message});box.remove();toast('Reply sent to player.')}}
 $('#confirmCancel').onclick=()=>{$('#confirm').classList.add('hidden');pending=null};$('#confirmGo').onclick=()=>{if(!pending)return;
- if(pending.radioStopAll){post('radioStopAll');toast('Stop all radios request sent.');$('#confirm').classList.add('hidden');pending=null;return}
- if(pending.radioStop){post('radioStop',{netId:pending.netId});toast('Stop radio request sent.');$('#confirm').classList.add('hidden');pending=null;return}
  if(pending.transferVehicle){
    post('transferVehicle',{target:pending.target});
    toast(`Vehicle transfer requested for ${pending.name}.`);
@@ -90,7 +65,7 @@ $('#restartSequenceBtn').onclick=()=>{
 };
 function formatRestartTime(seconds){seconds=Math.max(0,Number(seconds)||0);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`}
 
-window.addEventListener('message',e=>{const m=e.data;if(m.action==='show'){app.classList.remove('hidden');if(m.data){state=m.data;render()}}else if(m.action==='hide')app.classList.add('hidden');else if(m.action==='data'){state=m.data;render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();toast(`New report #${m.report.id}`)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='radioData'){state.radio=m.data||{available:false,radios:[]};renderRadios()}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
+window.addEventListener('message',e=>{const m=e.data;if(m.action==='show'){app.classList.remove('hidden');if(m.data){state=m.data;render()}}else if(m.action==='hide')app.classList.add('hidden');else if(m.action==='data'){state=m.data;render()}else if(m.action==='newReport'){state.reports.push(m.report);renderReports();toast(`New report #${m.report.id}`)}else if(m.action==='toast'||m.action==='reportReplyNotification')toast(m.message);else if(m.action==='restartWarning'){const b=$('#restartBanner');b.classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`;let remaining=Number(m.seconds)||120;clearInterval(window.__restartTimer);window.__restartTimer=setInterval(()=>{remaining--;$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(remaining)}`;if(remaining<=0)clearInterval(window.__restartTimer)},1000)}else if(m.action==='restartCountdown'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent=`Server restart in ${formatRestartTime(m.seconds)}`}else if(m.action==='restartNow'){$('#restartBanner').classList.remove('hidden');$('#restartBannerText').textContent='Server restarting now...'}else if(m.action==='spectating'){$('#pageSub').textContent=`Spectating player ${m.target} — ESC to stop`}else if(m.action==='spectateOff')$('#pageSub').textContent=titles[$('.page.active').id][1]});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#confirm').classList.contains('hidden')){$('#confirm').classList.add('hidden');pending=null}else if(e.key==='Escape')post('close')});
 
 document.addEventListener('click', async (e) => {
@@ -253,10 +228,8 @@ $('#godModeBtn').onclick=async()=>{
   }catch(e){toast('Could not toggle God Mode.')}
 };
 
-
-// Optional ACG Radio controls
-const radioNav=document.querySelector('[data-tab="radio"]');
-if(radioNav) radioNav.addEventListener('click',()=>post('radioRefresh'));
-const radioRefresh=$('#radioRefresh'); if(radioRefresh) radioRefresh.onclick=()=>post('radioRefresh');
-const radioStopAll=$('#radioStopAll'); if(radioStopAll) radioStopAll.onclick=()=>{pending={radioStopAll:true};$('#confirmTitle').textContent='Stop all vehicle radios?';$('#confirmText').textContent='This will stop every active agc-carradio vehicle radio on the server.';$('#reasonWrap').classList.add('hidden');$('#confirm').classList.remove('hidden')};
-document.addEventListener('click',e=>{const stop=e.target.closest('[data-radio-stop]');if(stop){const netId=Number(stop.dataset.radioStop);pending={radioStop:true,netId};$('#confirmTitle').textContent='Stop vehicle radio?';$('#confirmText').textContent=`Stop the active radio on vehicle network ID #${netId}?`;$('#reasonWrap').classList.add('hidden');$('#confirm').classList.remove('hidden');return}const tp=e.target.closest('[data-radio-teleport]');if(tp){post('radioTeleport',{netId:Number(tp.dataset.radioTeleport)});toast('Teleport request sent.')}});
+let noclipEnabled=false,invisibleEnabled=false;
+$('#noclipBtn').onclick=async()=>{const d=await(await post('toggleNoclip')).json();noclipEnabled=!!d.enabled;$('#noclipStatus').textContent=noclipEnabled?'ON':'OFF';$('#noclipBtn').textContent=noclipEnabled?'Disable Noclip':'Enable Noclip';toast(`Noclip ${noclipEnabled?'enabled':'disabled'}.`)};
+$('#invisibleBtn').onclick=async()=>{const d=await(await post('toggleInvisible')).json();invisibleEnabled=!!d.enabled;$('#invisibleStatus').textContent=invisibleEnabled?'ON':'OFF';$('#invisibleBtn').textContent=invisibleEnabled?'Become Visible':'Become Invisible';toast(`Invisible Mode ${invisibleEnabled?'enabled':'disabled'}.`)};
+$('#tpWaypointBtn').onclick=async()=>{const d=await(await post('teleportWaypoint')).json();toast(d.ok?'Teleported to waypoint.':d.message)};
+$('#inspectEntityBtn').onclick=async()=>{const d=await(await post('inspectEntity')).json();if(!d.ok){$('#entityDebug').textContent=d.message;return}$('#entityDebug').innerHTML=`<b>${esc(d.type)}</b><br>Entity: ${d.entity}<br>Network ID: ${d.networkId}<br>Model Hash: ${d.model}<br>Coords: ${Number(d.x).toFixed(3)}, ${Number(d.y).toFixed(3)}, ${Number(d.z).toFixed(3)}<br>Heading: ${Number(d.heading).toFixed(3)}<br>Health: ${d.health}`};

@@ -6,84 +6,6 @@ local bans = {}
 local reports = {}
 local nextReportId = 1
 
-
--- Optional acg_radio integration ------------------------------------------------
-local function radioResourceName()
-    local cfg = Config.AcgRadio or {}
-    return tostring(cfg.ResourceName or 'acg_radio')
-end
-
-local function isRadioAvailable()
-    if Config.AcgRadio and Config.AcgRadio.Enabled == false then return false end
-    return GetResourceState(radioResourceName()) == 'started'
-end
-
-local function getActiveRadios()
-    if not isRadioAvailable() then return {}, false end
-    local ok, radios = pcall(function()
-        return exports[radioResourceName()]:GetActiveRadios()
-    end)
-    if not ok or type(radios) ~= 'table' then return {}, false end
-    return radios, true
-end
-
-local function getRadioOccupants(netId)
-    local occupants = {}
-    netId = tonumber(netId)
-    if not netId then return occupants end
-
-    local vehicle = NetworkGetEntityFromNetworkId(netId)
-    if not vehicle or vehicle == 0 or not DoesEntityExist(vehicle) then
-        return occupants
-    end
-
-    local QBCore = exports['qb-core']:GetCoreObject()
-    local driverPed = GetPedInVehicleSeat(vehicle, -1)
-
-    for _, id in ipairs(GetPlayers()) do
-        local src = tonumber(id)
-        local ped = src and GetPlayerPed(src) or 0
-        if ped and ped ~= 0 and DoesEntityExist(ped) and GetVehiclePedIsIn(ped, false) == vehicle then
-            local platformName = GetPlayerName(src) or ('Player ' .. tostring(src))
-            local characterName = 'Character not loaded'
-            local Player = QBCore.Functions.GetPlayer(src)
-            if Player and Player.PlayerData and Player.PlayerData.charinfo then
-                local ci = Player.PlayerData.charinfo
-                local full = (tostring(ci.firstname or '') .. ' ' .. tostring(ci.lastname or ''))
-                    :gsub('^%s+', ''):gsub('%s+$', '')
-                if full ~= '' then characterName = full end
-            end
-
-            occupants[#occupants + 1] = {
-                id = src,
-                characterName = characterName,
-                rockstarName = platformName,
-                role = ped == driverPed and 'Driver' or 'Passenger'
-            }
-        end
-    end
-
-    table.sort(occupants, function(a, b)
-        if a.role ~= b.role then return a.role == 'Driver' end
-        return a.id < b.id
-    end)
-    return occupants
-end
-
-local function radioPayload()
-    local radios, available = getActiveRadios()
-    if available then
-        for _, radio in ipairs(radios) do
-            radio.occupants = getRadioOccupants(radio.netId)
-        end
-    end
-    return { available = available, radios = radios }
-end
-
-local function sendRadioData(src)
-    TriggerClientEvent('fadm:radioData', src, radioPayload())
-end
-
 local function isAdmin(src)
     return src == 0 or IsPlayerAceAllowed(src, Config.AdminAce)
 end
@@ -172,72 +94,6 @@ RegisterNetEvent('fadm:setPlayerJob', function(target, jobName, grade)
     setPlayerJob(source, target, jobName, grade)
 end)
 
-
-
-RegisterNetEvent('fadm:radioRefresh', function()
-    local src = source
-    if not isAdmin(src) then return end
-    sendRadioData(src)
-end)
-
-RegisterNetEvent('fadm:radioStop', function(netId)
-    local src = source
-    if not isAdmin(src) then return end
-    netId = tonumber(netId)
-    if not netId or not isRadioAvailable() then
-        notify(src, 'ACG Radio is not available.')
-        sendRadioData(src)
-        return
-    end
-    local ok, stopped = pcall(function()
-        return exports[radioResourceName()]:StopVehicleRadio(netId)
-    end)
-    if ok and stopped then notify(src, ('Stopped vehicle radio #%s.'):format(netId))
-    else notify(src, 'Unable to stop that radio; it may no longer be active.') end
-    sendRadioData(src)
-end)
-
-RegisterNetEvent('fadm:radioStopAll', function()
-    local src = source
-    if not isAdmin(src) then return end
-    if not isRadioAvailable() then
-        notify(src, 'ACG Radio is not available.')
-        sendRadioData(src)
-        return
-    end
-    local ok, count = pcall(function()
-        return exports[radioResourceName()]:StopAllRadios()
-    end)
-    if ok then notify(src, ('Stopped %s active radio(s).'):format(tonumber(count) or 0))
-    else notify(src, 'Unable to stop active radios.') end
-    sendRadioData(src)
-end)
-
-RegisterNetEvent('fadm:radioTeleport', function(netId)
-    local src = source
-    if not isAdmin(src) then return end
-    netId = tonumber(netId)
-    if not netId or not isRadioAvailable() then
-        notify(src, 'ACG Radio is not available.')
-        return
-    end
-    local ok, radio = pcall(function()
-        return exports[radioResourceName()]:GetVehicleRadio(netId)
-    end)
-    if not ok or not radio then
-        notify(src, 'That vehicle radio is no longer active.')
-        sendRadioData(src)
-        return
-    end
-    local entity = NetworkGetEntityFromNetworkId(netId)
-    if not entity or entity == 0 or not DoesEntityExist(entity) then
-        notify(src, 'Radio vehicle entity is not currently available to the server.')
-        return
-    end
-    local c = GetEntityCoords(entity)
-    TriggerClientEvent('fadm:teleportToRadioCoords', src, c.x, c.y, c.z, netId)
-end)
-
 local function loadBans()
     local raw = LoadResourceFile(RESOURCE, Config.BanFile)
     if raw and raw ~= '' then
@@ -322,8 +178,7 @@ RegisterNetEvent('fadm:getData', function()
 
     TriggerClientEvent('fadm:openData', src, {
         players = playerList(),
-        reports = reports,
-        radio = radioPayload()
+        reports = reports
     })
 end)
 
@@ -332,8 +187,7 @@ RegisterNetEvent('fadm:refresh', function()
     if not isAdmin(src) then return end
     TriggerClientEvent('fadm:updateData', src, {
         players = playerList(),
-        reports = reports,
-        radio = radioPayload()
+        reports = reports
     })
 end)
 
@@ -671,8 +525,7 @@ RegisterNetEvent('fadm:closeReport', function(reportId)
 
     TriggerClientEvent('fadm:updateData', src, {
         players = playerList(),
-        reports = reports,
-        radio = radioPayload()
+        reports = reports
     })
 end)
 

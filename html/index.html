@@ -20,7 +20,6 @@
         <button class="nav" data-tab="reports">⚑ <span>Reports</span><b id="reportCount">0</b></button>
         <button class="nav" data-tab="world">◉ <span>World Controls</span></button>
         <button class="nav" data-tab="developer">⌘ <span>Developer</span></button>
-        <button class="nav" data-tab="radio">♫ <span>ACG Radio</span><b id="radioCount">0</b></button>
         <button class="nav" data-tab="reportForm">＋ <span>New Report</span></button>
       </nav>
       <div class="side-foot"><span class="online-dot"></span> Admin session active</div>
@@ -101,6 +100,10 @@
               <div class="inline"><input id="coordVector4" readonly value="vector4(0.0, 0.0, 0.0, 0.0)"><button id="copyVector4">Copy</button></div>
               <div class="world-actions"><button id="getCoords" class="primary">Get Current Coords</button></div>
             </article>
+            <article class="world-card developer-card"><div class="world-icon">✈</div><h3>Noclip</h3><p>Fly freely. WASD moves, Space/Ctrl changes height, Shift increases speed.</p><div class="dev-status"><span>Status</span><strong id="noclipStatus">OFF</strong></div><div class="world-actions"><button id="noclipBtn" class="primary">Enable Noclip</button></div></article>
+            <article class="world-card developer-card"><div class="world-icon">◌</div><h3>Invisible Mode</h3><p>Hide your admin character while observing players.</p><div class="dev-status"><span>Status</span><strong id="invisibleStatus">OFF</strong></div><div class="world-actions"><button id="invisibleBtn" class="primary">Become Invisible</button></div></article>
+            <article class="world-card developer-card"><div class="world-icon">⌖</div><h3>Teleport to Waypoint</h3><p>Teleport to the waypoint placed on your GTA map.</p><div class="world-actions"><button id="tpWaypointBtn" class="primary">Teleport to Waypoint</button></div></article>
+            <article class="world-card developer-card"><div class="world-icon">◎</div><h3>Entity Debugger</h3><p>Inspect the entity directly in front of your camera.</p><div class="entity-debug" id="entityDebug">No entity inspected yet.</div><div class="world-actions"><button id="inspectEntityBtn" class="primary">Inspect Entity</button></div></article>
             <article class="world-card developer-card">
               <div class="world-icon">♜</div>
               <h3>God Mode</h3>
@@ -109,12 +112,6 @@
               <div class="world-actions"><button id="godModeBtn" class="primary">Enable God Mode</button></div>
             </article>
           </div>
-        </section>
-
-        <section id="radio" class="page">
-          <div class="section-head"><div><h2>ACG Radio Management</h2><p>View and manage active vehicle radios through the optional agc-carradio server API.</p></div><div class="radio-head-actions"><span id="radioAvailability" class="badge">CHECKING</span><button id="radioRefresh" class="ghost">↻ Refresh Radios</button><button id="radioStopAll" class="danger">Stop All Radios</button></div></div>
-          <div id="radioSummary" class="radio-summary"></div>
-          <div id="radioList" class="cards"></div>
         </section>
         <section id="reportForm" class="page">
           <div class="form-card">
