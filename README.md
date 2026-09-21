@@ -361,3 +361,9 @@ ACE admins now start off duty. Off-duty admins may open the menu only to use the
 Dashboard/Go On Duty control. All administrative actions are independently
 blocked server-side until duty is active. Off-duty admins do not receive new
 report alerts, and report/player data is cleared when going off duty.
+
+## v55 Off-Duty Menu Access Fix
+The `/admin` command was still checking `isAdmin()`, which now requires active
+duty. That prevented an off-duty admin from opening the menu to go on duty.
+Opening `/admin` now checks ACE permission only (`hasAdminAce`); all actual
+administrative functions continue to require active duty server-side.

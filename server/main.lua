@@ -535,7 +535,9 @@ RegisterNetEvent('fadm:closeReport', function(reportId)
 end)
 
 RegisterCommand('admin', function(src)
-    if not isAdmin(src) then
+    -- Opening the menu only requires ACE permission. Admin actions themselves
+    -- still require active duty through isAdmin().
+    if not hasAdminAce(src) then
         notify(src, 'You do not have permission to use the admin menu.')
         return
     end
